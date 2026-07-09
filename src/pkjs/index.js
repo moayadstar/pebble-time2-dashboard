@@ -442,7 +442,7 @@ function fetchWeatherForCoordinates(latitude, longitude, cityLabel) {
       var weatherCode = typeof current.weather_code === "number" ? current.weather_code : currentWeather.weathercode;
 
       sendWeather({
-        WEATHER_TEMP: typeof temp === "number" ? Math.round(temp) + "C" : "--",
+        WEATHER_TEMP: typeof temp === "number" ? String(Math.round(temp)) : "--",
         WEATHER_COND: codeToLabel(weatherCode),
         WEATHER_CITY: compactLabel(cityLabel, data.timezone_abbreviation || "Local"),
         WEATHER_CODE: typeof weatherCode === "number" ? weatherCode : -1,

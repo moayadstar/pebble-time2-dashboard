@@ -311,15 +311,19 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
                   GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 29, utc_rect.size.w - 16, 24),
                   GColorCeleste, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
 
-  draw_weather_icon(ctx, GPoint(weather_rect.origin.x + 30, weather_rect.origin.y + 30), s_weather_code, s_heartbeat_flash);
+  draw_weather_icon(ctx, GPoint(weather_rect.origin.x + (weather_rect.size.w / 2), weather_rect.origin.y + 23),
+                    s_weather_code, s_heartbeat_flash);
   if (strcmp(s_weather_temp_buffer, "--") == 0) {
     draw_value(ctx, s_weather_cond_buffer,
-               GRect(weather_rect.origin.x + 48, weather_rect.origin.y + 16, weather_rect.size.w - 56, 22),
+               GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 43, weather_rect.size.w - 16, 18),
                GColorYellow, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
   } else {
-    draw_value(ctx, s_weather_temp_buffer,
-               GRect(weather_rect.origin.x + 48, weather_rect.origin.y + 14, weather_rect.size.w - 56, 28),
-               GColorWhite, FONT_KEY_GOTHIC_28_BOLD, GTextAlignmentLeft);
+    draw_value_clip(ctx, s_weather_temp_buffer,
+                    GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 41, weather_rect.size.w - 36, 24),
+                    GColorWhite, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
+    draw_value(ctx, "C",
+               GRect(weather_rect.origin.x + weather_rect.size.w - 26, weather_rect.origin.y + 43, 18, 16),
+               GColorWhite, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
     draw_value(ctx, s_weather_cond_buffer,
                GRect(weather_rect.origin.x + 8, weather_rect.origin.y + weather_rect.size.h - 22, weather_rect.size.w - 16, 16),
                GColorYellow, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
