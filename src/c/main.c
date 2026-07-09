@@ -212,7 +212,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
              GRect(local_rect.origin.x + 8, local_rect.origin.y + local_rect.size.h - 29, local_rect.size.w - 16, 24),
              GColorMelon, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
 
-  draw_label(ctx, s_second_zone_label_buffer, GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 5, utc_rect.size.w - 16, 16), GColorWhite);
+  draw_label(ctx, "TRAVEL", GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 5, utc_rect.size.w - 16, 16), GColorWhite);
   draw_value(ctx, s_second_time_12h_buffer,
              GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 21, utc_rect.size.w - 16, 24),
              GColorWhite, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentLeft);
