@@ -42,6 +42,8 @@ static int s_second_zone_offset_minutes = 0;
 
 static bool s_health_available;
 static bool s_hr_available;
+static bool s_health_events_subscribed;
+static bool s_hr_sample_requested;
 
 static void update_second_zone_meta(void) {
   const int total_minutes = s_second_zone_offset_minutes;
@@ -104,11 +106,23 @@ static void update_health(void) {
     if (bpm > 0) {
       snprintf(s_hr_buffer, sizeof(s_hr_buffer), "%ld", (long)bpm);
     } else {
-      snprintf(s_hr_buffer, sizeof(s_hr_buffer), "--");
+      snprintf(s_hr_buffer, sizeof(s_hr_buffer), "wait");
     }
   } else {
-    snprintf(s_hr_buffer, sizeof(s_hr_buffer), "--");
+    snprintf(s_hr_buffer, sizeof(s_hr_buffer), "n/a");
   }
+}
+
+static void configure_heart_rate_sensor(void) {
+  s_hr_available = health_service_metric_accessible(HealthMetricHeartRateBPM, time_start_of_today(), time(NULL)) &
+                   HealthServiceAccessibilityMaskAvailable;
+
+  if (!s_hr_available) {
+    s_hr_sample_requested = false;
+    return;
+  }
+
+  s_hr_sample_requested = health_service_set_heart_rate_sample_period(60);
 }
 
 static void update_time(void) {
@@ -329,12 +343,18 @@ static void init(void) {
   window_stack_push(s_main_window, true);
 
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
-  health_service_events_subscribe(health_handler, NULL);
+  s_health_events_subscribed = health_service_events_subscribe(health_handler, NULL);
+  configure_heart_rate_sensor();
   request_weather();
 }
 
 static void deinit(void) {
-  health_service_events_unsubscribe();
+  if (s_hr_sample_requested) {
+    health_service_set_heart_rate_sample_period(0);
+  }
+  if (s_health_events_subscribed) {
+    health_service_events_unsubscribe();
+  }
   tick_timer_service_unsubscribe();
   app_message_deregister_callbacks();
   window_destroy(s_main_window);
