@@ -1,7 +1,7 @@
 {
   "name": "pebble-time2-dashboard",
   "author": "OpenAI Codex",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "keywords": [
     "pebble-watchface"
   ],
@@ -18,6 +18,9 @@
     "sdkVersion": "3",
     "enableMultiJS": true,
     "configurable": true,
+    "capabilities": [
+      "location"
+    ],
     "targetPlatforms": [
       "basalt",
       "emery"

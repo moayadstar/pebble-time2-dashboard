@@ -317,20 +317,27 @@ function flushAppMessageQueue() {
   }
 
   appMessageSending = true;
-  var payload = appMessageQueue.shift();
+  var item = appMessageQueue.shift();
+  var payload = item.payload;
 
   Pebble.sendAppMessage(payload, function () {
     appMessageSending = false;
     flushAppMessageQueue();
   }, function () {
-    appMessageQueue.unshift(payload);
+    if (item.retries < 3) {
+      item.retries += 1;
+      appMessageQueue.unshift(item);
+    }
     appMessageSending = false;
     setTimeout(flushAppMessageQueue, 500);
   });
 }
 
 function queueAppMessage(payload) {
-  appMessageQueue.push(payload);
+  appMessageQueue.push({
+    payload: payload,
+    retries: 0
+  });
   flushAppMessageQueue();
 }
 
@@ -377,49 +384,53 @@ function sendError(message) {
 }
 
 function requestJson(url, onSuccess, onFailure) {
-  if (typeof fetch === "function") {
-    fetch(url)
-      .then(function (response) {
-        return response.json();
-      })
-      .then(onSuccess)
-      .catch(onFailure);
-    return;
+  function failOrFetch() {
+    if (typeof fetch === "function") {
+      fetch(url)
+        .then(function (response) {
+          return response.json();
+        })
+        .then(onSuccess)
+        .catch(onFailure);
+    } else {
+      onFailure();
+    }
   }
 
   try {
     var request = new XMLHttpRequest();
     request.open("GET", url, true);
     request.onload = function () {
-      if (request.status >= 200 && request.status < 300) {
+      if ((request.status >= 200 && request.status < 300) || (request.status === 0 && request.responseText)) {
         try {
           onSuccess(JSON.parse(request.responseText));
         } catch (e) {
-          onFailure();
+          failOrFetch();
         }
       } else {
-        onFailure();
+        failOrFetch();
       }
     };
-    request.onerror = onFailure;
-    request.ontimeout = onFailure;
+    request.onerror = failOrFetch;
+    request.ontimeout = failOrFetch;
     request.timeout = 15000;
     request.send();
   } catch (e) {
-    onFailure();
+    failOrFetch();
   }
 }
 
 function fetchWeatherForCoordinates(latitude, longitude, cityLabel) {
   var url = "https://api.open-meteo.com/v1/forecast?latitude=" + latitude +
     "&longitude=" + longitude +
-    "&current=temperature_2m,weather_code&timezone=auto";
+    "&current=temperature_2m,weather_code&current_weather=true&timezone=auto";
 
   requestJson(url,
     function (data) {
       var current = data.current || {};
-      var temp = current.temperature_2m;
-      var weatherCode = current.weather_code;
+      var currentWeather = data.current_weather || {};
+      var temp = typeof current.temperature_2m === "number" ? current.temperature_2m : currentWeather.temperature;
+      var weatherCode = typeof current.weather_code === "number" ? current.weather_code : currentWeather.weathercode;
 
       sendWeather({
         WEATHER_TEMP: typeof temp === "number" ? Math.round(temp) + "C" : "--",
@@ -489,7 +500,7 @@ function clientSettingsScript() {
     'function renderSelect(select,items,selectedLabel,kind){if(!items.length){items=[{label:"No results",mode:"none"}];}select.innerHTML=items.map(function(item){var disabled=item.mode==="none"?" disabled":"";var selected=item.label===selectedLabel?" selected":"";var value;if(item.mode==="none"){value="No results|none|||";}else if(kind==="weather"&&item.mode==="gps"){value=item.label+"|gps|||";}else if(kind==="local"&&item.mode==="phone"){value=item.label+"|phone|||PHONE";}else{value=item.label+"|fixed|"+(item.latitude||0)+"|"+(item.longitude||0)+"|"+(item.timezone||"UTC");}var suffix=item.timezone&&item.timezone!=="PHONE"?" ("+item.timezone+")":"";return "<option value=\\""+value.replace(/"/g,"&quot;")+"\\""+selected+disabled+">"+item.label+suffix+"</option>";}).join("");}' +
     'function localSearch(options,q){return options.filter(function(item){return item.label.toLowerCase().indexOf(q)!==-1||(item.timezone&&item.timezone.toLowerCase().indexOf(q)!==-1);}).slice(0,70);}' +
     'function mergeResults(a,b){var seen={};var out=[];a.concat(b).forEach(function(item){var key=optionKey(item);if(!seen[key]){seen[key]=true;out.push(item);}});return out.slice(0,90);}' +
-    'function fetchRemoteSearch(q){var url="https://geocoding-api.open-meteo.com/v1/search?name="+encodeURIComponent(q)+"&count=25&language=en&format=json";return fetch(url).then(function(r){return r.json();}).then(function(data){return ((data&&data.results)||[]).map(function(item){var parts=[item.name];if(item.admin1&&item.admin1!==item.name)parts.push(item.admin1);if(item.country)parts.push(item.country);return {label:parts.join(", "),mode:"fixed",latitude:item.latitude,longitude:item.longitude,timezone:item.timezone||"UTC"};});}).catch(function(){return [];});}' +
+    'function fetchRemoteSearch(q){var url="https://geocoding-api.open-meteo.com/v1/search?name="+encodeURIComponent(q)+"&count=25&language=en&format=json";function map(data){return ((data&&data.results)||[]).map(function(item){var parts=[item.name];if(item.admin1&&item.admin1!==item.name)parts.push(item.admin1);if(item.country)parts.push(item.country);return {label:parts.join(", "),mode:"fixed",latitude:item.latitude,longitude:item.longitude,timezone:item.timezone||"UTC"};});}return new Promise(function(resolve){function done(data){resolve(map(data));}function fail(){resolve([]);}if(typeof XMLHttpRequest!=="undefined"){try{var xhr=new XMLHttpRequest();xhr.open("GET",url,true);xhr.onload=function(){if(xhr.status>=200&&xhr.status<300){try{done(JSON.parse(xhr.responseText));}catch(e){fail();}}else{fail();}};xhr.onerror=fail;xhr.ontimeout=fail;xhr.timeout=12000;xhr.send();return;}catch(e){}}if(typeof fetch==="function"){fetch(url).then(function(r){return r.json();}).then(done).catch(fail);}else{fail();}});}' +
     'function wireSearch(input,select,options,selectedLabel,kind){var timer=null;function run(){var q=input.value.trim().toLowerCase();if(!q){renderSelect(select,options.slice(0,80),selectedLabel,kind);return;}var local=localSearch(options,q);renderSelect(select,local,selectedLabel,kind);if(q.length<3)return;fetchRemoteSearch(q).then(function(remote){renderSelect(select,mergeResults(local,remote),selectedLabel,kind);});}input.addEventListener("input",function(){clearTimeout(timer);timer=setTimeout(run,250);});run();}' +
     'function tzOffset(tz){if(!tz||tz==="UTC")return 0;try{var now=new Date();var parts=new Intl.DateTimeFormat("en-US",{timeZone:tz,hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).formatToParts(now);var v={};parts.forEach(function(p){v[p.type]=p.value;});var h=parseInt(v.hour,10);if(h===24)h=0;var asUtc=Date.UTC(parseInt(v.year,10),parseInt(v.month,10)-1,parseInt(v.day,10),h,parseInt(v.minute,10));return Math.round((asUtc-now.getTime())/60000);}catch(e){return 0;}}' +
     'var localInput=document.getElementById("local-search");var localSelect=document.getElementById("local-location");var timeInput=document.getElementById("time-search");var timeSelect=document.getElementById("time-location");var weatherInput=document.getElementById("weather-search");var weatherSelect=document.getElementById("weather-location");wireSearch(localInput,localSelect,LOCAL_TIME_OPTIONS,selectedLocalTimeLabel,"local");wireSearch(timeInput,timeSelect,TIME_OPTIONS,selectedTimeLabel,"time");wireSearch(weatherInput,weatherSelect,WEATHER_OPTIONS,selectedWeatherLabel,"weather");' +
