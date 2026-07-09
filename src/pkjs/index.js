@@ -162,6 +162,25 @@ var WEATHER_LOCATION_OPTIONS = [
   };
 }));
 
+var PHONE_LOCAL_TIME_OPTION = {
+  label: "Current local time from phone",
+  mode: "phone",
+  timezone: "PHONE"
+};
+
+var LOCAL_TIME_OPTIONS = [PHONE_LOCAL_TIME_OPTION].concat(CAPITAL_TIME_OPTIONS);
+
+function getPhoneLocalZone() {
+  return {
+    label: "LOCAL",
+    mode: "phone",
+    timezone: "PHONE",
+    latitude: 0,
+    longitude: 0,
+    offset: -new Date().getTimezoneOffset()
+  };
+}
+
 function getTimezoneOffsetMinutes(timezone) {
   if (!timezone || timezone === "UTC") {
     return 0;
@@ -217,8 +236,13 @@ function formatOffset(minutes) {
 }
 
 function normalizeTimeZone(zone) {
+  if (zone && zone.mode === "phone") {
+    return getPhoneLocalZone();
+  }
+
   return {
     label: zone.label || "UTC",
+    mode: zone.mode || "fixed",
     timezone: zone.timezone || "UTC",
     latitude: zone.latitude || 0,
     longitude: zone.longitude || 0,
@@ -245,15 +269,7 @@ function getSavedLocalZone() {
     }
   } catch (e) {}
 
-  var localTimezone = "UTC";
-  try {
-    localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  } catch (e) {}
-
-  return normalizeTimeZone({
-    label: localTimezone.split("/").pop().replace(/_/g, " "),
-    timezone: localTimezone
-  });
+  return getPhoneLocalZone();
 }
 
 function getSavedWeatherLocation() {
@@ -362,6 +378,7 @@ function buildSettingsHtml() {
   var selectedLocalTime = getSavedLocalZone();
   var selectedTime = getSavedSecondZone();
   var selectedWeather = getSavedWeatherLocation();
+  var localOptionsJson = JSON.stringify(LOCAL_TIME_OPTIONS).replace(/</g, "\\u003c");
   var timeOptionsJson = JSON.stringify(CAPITAL_TIME_OPTIONS).replace(/</g, "\\u003c");
   var weatherOptionsJson = JSON.stringify(WEATHER_LOCATION_OPTIONS).replace(/</g, "\\u003c");
 
@@ -375,7 +392,7 @@ function buildSettingsHtml() {
     '<h2>Weather</h2><label for="weather-search">Search country or city</label><input id="weather-search" type="text" placeholder="Search weather location" value="' + escapeHtml(selectedWeather.label || "Phone GPS") + '">' +
     '<label for="weather-location">Weather location</label><select id="weather-location"></select><div class="hint">Choose Phone GPS to always use your current location.</div>' +
     '<button id="save">Save</button>' +
-    '<script>var TIME_OPTIONS=' + timeOptionsJson + ';var WEATHER_OPTIONS=' + weatherOptionsJson + ';var selectedLocalTimeLabel=' + JSON.stringify(selectedLocalTime.label) + ';var selectedTimeLabel=' + JSON.stringify(selectedTime.label) + ';var selectedWeatherLabel=' + JSON.stringify(selectedWeather.label || "Phone GPS") + ';' +
+    '<script>var LOCAL_TIME_OPTIONS=' + localOptionsJson + ';var TIME_OPTIONS=' + timeOptionsJson + ';var WEATHER_OPTIONS=' + weatherOptionsJson + ';var selectedLocalTimeLabel=' + JSON.stringify(selectedLocalTime.mode === "phone" ? PHONE_LOCAL_TIME_OPTION.label : selectedLocalTime.label) + ';var selectedTimeLabel=' + JSON.stringify(selectedTime.label) + ';var selectedWeatherLabel=' + JSON.stringify(selectedWeather.label || "Phone GPS") + ';' +
     clientSettingsScript() +
     '</script></body></html>';
 }
@@ -386,14 +403,14 @@ function escapeHtml(text) {
 
 function clientSettingsScript() {
   return 'function optionKey(item){return item.label+"|"+(item.timezone||"")+"|"+(item.latitude||"")+"|"+(item.longitude||"");}' +
-    'function renderSelect(select,items,selectedLabel,kind){if(!items.length){items=[{label:"No results",mode:"none"}];}select.innerHTML=items.map(function(item){var disabled=item.mode==="none"?" disabled":"";var selected=item.label===selectedLabel?" selected":"";var value;if(item.mode==="none"){value="No results|none|||";}else if(kind==="weather"&&item.mode==="gps"){value=item.label+"|gps|||";}else{value=item.label+"|fixed|"+(item.latitude||0)+"|"+(item.longitude||0)+"|"+(item.timezone||"UTC");}var suffix=item.timezone?" ("+item.timezone+")":"";return "<option value=\\""+value.replace(/"/g,"&quot;")+"\\""+selected+disabled+">"+item.label+suffix+"</option>";}).join("");}' +
+    'function renderSelect(select,items,selectedLabel,kind){if(!items.length){items=[{label:"No results",mode:"none"}];}select.innerHTML=items.map(function(item){var disabled=item.mode==="none"?" disabled":"";var selected=item.label===selectedLabel?" selected":"";var value;if(item.mode==="none"){value="No results|none|||";}else if(kind==="weather"&&item.mode==="gps"){value=item.label+"|gps|||";}else if(kind==="local"&&item.mode==="phone"){value=item.label+"|phone|||PHONE";}else{value=item.label+"|fixed|"+(item.latitude||0)+"|"+(item.longitude||0)+"|"+(item.timezone||"UTC");}var suffix=item.timezone&&item.timezone!=="PHONE"?" ("+item.timezone+")":"";return "<option value=\\""+value.replace(/"/g,"&quot;")+"\\""+selected+disabled+">"+item.label+suffix+"</option>";}).join("");}' +
     'function localSearch(options,q){return options.filter(function(item){return item.label.toLowerCase().indexOf(q)!==-1||(item.timezone&&item.timezone.toLowerCase().indexOf(q)!==-1);}).slice(0,70);}' +
     'function mergeResults(a,b){var seen={};var out=[];a.concat(b).forEach(function(item){var key=optionKey(item);if(!seen[key]){seen[key]=true;out.push(item);}});return out.slice(0,90);}' +
     'function fetchRemoteSearch(q){var url="https://geocoding-api.open-meteo.com/v1/search?name="+encodeURIComponent(q)+"&count=25&language=en&format=json";return fetch(url).then(function(r){return r.json();}).then(function(data){return ((data&&data.results)||[]).map(function(item){var parts=[item.name];if(item.admin1&&item.admin1!==item.name)parts.push(item.admin1);if(item.country)parts.push(item.country);return {label:parts.join(", "),mode:"fixed",latitude:item.latitude,longitude:item.longitude,timezone:item.timezone||"UTC"};});}).catch(function(){return [];});}' +
     'function wireSearch(input,select,options,selectedLabel,kind){var timer=null;function run(){var q=input.value.trim().toLowerCase();if(!q){renderSelect(select,options.slice(0,80),selectedLabel,kind);return;}var local=localSearch(options,q);renderSelect(select,local,selectedLabel,kind);if(q.length<3)return;fetchRemoteSearch(q).then(function(remote){renderSelect(select,mergeResults(local,remote),selectedLabel,kind);});}input.addEventListener("input",function(){clearTimeout(timer);timer=setTimeout(run,250);});run();}' +
     'function tzOffset(tz){if(!tz||tz==="UTC")return 0;try{var now=new Date();var parts=new Intl.DateTimeFormat("en-US",{timeZone:tz,hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).formatToParts(now);var v={};parts.forEach(function(p){v[p.type]=p.value;});var h=parseInt(v.hour,10);if(h===24)h=0;var asUtc=Date.UTC(parseInt(v.year,10),parseInt(v.month,10)-1,parseInt(v.day,10),h,parseInt(v.minute,10));return Math.round((asUtc-now.getTime())/60000);}catch(e){return 0;}}' +
-    'var localInput=document.getElementById("local-search");var localSelect=document.getElementById("local-location");var timeInput=document.getElementById("time-search");var timeSelect=document.getElementById("time-location");var weatherInput=document.getElementById("weather-search");var weatherSelect=document.getElementById("weather-location");wireSearch(localInput,localSelect,TIME_OPTIONS,selectedLocalTimeLabel,"time");wireSearch(timeInput,timeSelect,TIME_OPTIONS,selectedTimeLabel,"time");wireSearch(weatherInput,weatherSelect,WEATHER_OPTIONS,selectedWeatherLabel,"weather");' +
-    'document.getElementById("save").addEventListener("click",function(){var l=localSelect.value.split("|");var t=timeSelect.value.split("|");var w=weatherSelect.value.split("|");if(!l[1]||l[1]==="none"||!t[1]||t[1]==="none"||!w[1]||w[1]==="none")return;var ltz=l[4]||"UTC";var tz=t[4]||"UTC";var data={LOCAL_ZONE_LABEL:l[0],LOCAL_ZONE_OFFSET:tzOffset(ltz),LOCAL_ZONE_TIMEZONE:ltz,LOCAL_ZONE_LAT:l[2]?parseFloat(l[2]):0,LOCAL_ZONE_LON:l[3]?parseFloat(l[3]):0,SECOND_ZONE_LABEL:t[0],SECOND_ZONE_OFFSET:tzOffset(tz),SECOND_ZONE_TIMEZONE:tz,SECOND_ZONE_LAT:t[2]?parseFloat(t[2]):0,SECOND_ZONE_LON:t[3]?parseFloat(t[3]):0,WEATHER_LOCATION_LABEL:w[0],WEATHER_LOCATION_MODE:w[1],WEATHER_LOCATION_LAT:w[2]?parseFloat(w[2]):0,WEATHER_LOCATION_LON:w[3]?parseFloat(w[3]):0,WEATHER_LOCATION_TIMEZONE:w[4]||"UTC"};document.location="pebblejs://close#"+encodeURIComponent(JSON.stringify(data));});';
+    'var localInput=document.getElementById("local-search");var localSelect=document.getElementById("local-location");var timeInput=document.getElementById("time-search");var timeSelect=document.getElementById("time-location");var weatherInput=document.getElementById("weather-search");var weatherSelect=document.getElementById("weather-location");wireSearch(localInput,localSelect,LOCAL_TIME_OPTIONS,selectedLocalTimeLabel,"local");wireSearch(timeInput,timeSelect,TIME_OPTIONS,selectedTimeLabel,"time");wireSearch(weatherInput,weatherSelect,WEATHER_OPTIONS,selectedWeatherLabel,"weather");' +
+    'document.getElementById("save").addEventListener("click",function(){var l=localSelect.value.split("|");var t=timeSelect.value.split("|");var w=weatherSelect.value.split("|");if(!l[1]||l[1]==="none"||!t[1]||t[1]==="none"||!w[1]||w[1]==="none")return;var isPhoneLocal=l[1]==="phone";var ltz=l[4]||"UTC";var tz=t[4]||"UTC";var data={LOCAL_ZONE_LABEL:isPhoneLocal?"LOCAL":l[0],LOCAL_ZONE_MODE:isPhoneLocal?"phone":"fixed",LOCAL_ZONE_OFFSET:isPhoneLocal?-new Date().getTimezoneOffset():tzOffset(ltz),LOCAL_ZONE_TIMEZONE:ltz,LOCAL_ZONE_LAT:l[2]?parseFloat(l[2]):0,LOCAL_ZONE_LON:l[3]?parseFloat(l[3]):0,SECOND_ZONE_LABEL:t[0],SECOND_ZONE_OFFSET:tzOffset(tz),SECOND_ZONE_TIMEZONE:tz,SECOND_ZONE_LAT:t[2]?parseFloat(t[2]):0,SECOND_ZONE_LON:t[3]?parseFloat(t[3]):0,WEATHER_LOCATION_LABEL:w[0],WEATHER_LOCATION_MODE:w[1],WEATHER_LOCATION_LAT:w[2]?parseFloat(w[2]):0,WEATHER_LOCATION_LON:w[3]?parseFloat(w[3]):0,WEATHER_LOCATION_TIMEZONE:w[4]||"UTC"};document.location="pebblejs://close#"+encodeURIComponent(JSON.stringify(data));});';
 }
 
 Pebble.addEventListener("ready", function () {
@@ -431,6 +448,7 @@ Pebble.addEventListener("webviewclosed", function (e) {
 
   var localZone = normalizeTimeZone({
     label: config.LOCAL_ZONE_LABEL,
+    mode: config.LOCAL_ZONE_MODE || "fixed",
     timezone: config.LOCAL_ZONE_TIMEZONE || "UTC",
     latitude: config.LOCAL_ZONE_LAT,
     longitude: config.LOCAL_ZONE_LON,
