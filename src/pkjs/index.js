@@ -150,17 +150,42 @@ var CAPITAL_TIME_OPTIONS = [
   { label: "N'Djamena, Chad", timezone: "Africa/Ndjamena", latitude: 12.1348, longitude: 15.0557 }
 ];
 
+var SAUDI_WEATHER_OPTIONS = [
+  { label: "Riyadh, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 24.7136, longitude: 46.6753 },
+  { label: "Jeddah, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 21.5433, longitude: 39.1728 },
+  { label: "Makkah, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 21.3891, longitude: 39.8579 },
+  { label: "Madinah, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 24.5247, longitude: 39.5692 },
+  { label: "Dammam, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 26.4207, longitude: 50.0888 },
+  { label: "Khobar, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 26.2794, longitude: 50.2083 },
+  { label: "Dhahran, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 26.2361, longitude: 50.0393 },
+  { label: "Tabuk, Tabuk Region, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 28.3838, longitude: 36.555 },
+  { label: "Taif, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 21.2703, longitude: 40.4158 },
+  { label: "Abha, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 18.2164, longitude: 42.5053 },
+  { label: "Khamis Mushait, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 18.3, longitude: 42.7333 },
+  { label: "Jazan, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 16.8892, longitude: 42.5511 },
+  { label: "Najran, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 17.565, longitude: 44.2289 },
+  { label: "Hail, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 27.5114, longitude: 41.7208 },
+  { label: "Buraidah, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 26.3592, longitude: 43.9818 },
+  { label: "Al Ahsa, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 25.3833, longitude: 49.5833 },
+  { label: "Yanbu, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 24.0895, longitude: 38.0618 },
+  { label: "Al Jubail, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 27.0174, longitude: 49.6225 },
+  { label: "AlUla, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 26.6085, longitude: 37.9232 },
+  { label: "Sakaka, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 29.9697, longitude: 40.2064 },
+  { label: "Arar, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 30.9753, longitude: 41.0381 },
+  { label: "Al Baha, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 20.0129, longitude: 41.4677 }
+];
+
 var WEATHER_LOCATION_OPTIONS = [
   { label: "Phone GPS", mode: "gps" }
-].concat(CAPITAL_TIME_OPTIONS.map(function (item) {
+].concat(SAUDI_WEATHER_OPTIONS).concat(CAPITAL_TIME_OPTIONS).map(function (item) {
   return {
     label: item.label,
-    mode: "fixed",
+    mode: item.mode || "fixed",
     latitude: item.latitude,
     longitude: item.longitude,
     timezone: item.timezone
   };
-}));
+});
 
 var PHONE_LOCAL_TIME_OPTION = {
   label: "Current local time from phone",
@@ -351,16 +376,47 @@ function sendError(message) {
   });
 }
 
+function requestJson(url, onSuccess, onFailure) {
+  if (typeof fetch === "function") {
+    fetch(url)
+      .then(function (response) {
+        return response.json();
+      })
+      .then(onSuccess)
+      .catch(onFailure);
+    return;
+  }
+
+  try {
+    var request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.onload = function () {
+      if (request.status >= 200 && request.status < 300) {
+        try {
+          onSuccess(JSON.parse(request.responseText));
+        } catch (e) {
+          onFailure();
+        }
+      } else {
+        onFailure();
+      }
+    };
+    request.onerror = onFailure;
+    request.ontimeout = onFailure;
+    request.timeout = 15000;
+    request.send();
+  } catch (e) {
+    onFailure();
+  }
+}
+
 function fetchWeatherForCoordinates(latitude, longitude, cityLabel) {
   var url = "https://api.open-meteo.com/v1/forecast?latitude=" + latitude +
     "&longitude=" + longitude +
     "&current=temperature_2m,weather_code&timezone=auto";
 
-  fetch(url)
-    .then(function (response) {
-      return response.json();
-    })
-    .then(function (data) {
+  requestJson(url,
+    function (data) {
       var current = data.current || {};
       var temp = current.temperature_2m;
       var weatherCode = current.weather_code;
@@ -371,10 +427,11 @@ function fetchWeatherForCoordinates(latitude, longitude, cityLabel) {
         WEATHER_CITY: compactLabel(cityLabel, data.timezone_abbreviation || "Local"),
         WEATHER_ERROR: ""
       });
-    })
-    .catch(function () {
+    },
+    function () {
       sendError("Net error");
-    });
+    }
+  );
 }
 
 function fetchWeather() {
