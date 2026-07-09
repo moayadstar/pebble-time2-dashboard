@@ -152,7 +152,7 @@ static void update_time(void) {
 
 static void draw_label(GContext *ctx, const char *text, GRect rect, GColor color) {
   graphics_context_set_text_color(ctx, color);
-  graphics_draw_text(ctx, text, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), rect,
+  graphics_draw_text(ctx, text, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD), rect,
                      GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 }
 
@@ -201,55 +201,58 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
   draw_panel(ctx, weather_rect, GColorIslamicGreen, GColorYellow);
   draw_panel(ctx, health_rect, GColorPurple, GColorPastelYellow);
 
-  draw_label(ctx, "LOCAL", GRect(local_rect.origin.x + 8, local_rect.origin.y + 6, local_rect.size.w - 16, 20), GColorWhite);
+  draw_label(ctx, "LOCAL", GRect(local_rect.origin.x + 8, local_rect.origin.y + 5, local_rect.size.w - 16, 16), GColorWhite);
   draw_value(ctx, s_local_time_12h_buffer,
-             GRect(local_rect.origin.x + 8, local_rect.origin.y + 27, local_rect.size.w - 16, 30),
+             GRect(local_rect.origin.x + 8, local_rect.origin.y + 22, local_rect.size.w - 16, 30),
              GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
   draw_value(ctx, s_local_period_buffer,
-             GRect(local_rect.origin.x + 10, local_rect.origin.y + local_rect.size.h - 24, 30, 18),
-             GColorMelon, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
+             GRect(local_rect.origin.x + 9, local_rect.origin.y + local_rect.size.h - 21, 28, 18),
+             GColorMelon, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_local_time_24h_buffer,
-             GRect(local_rect.origin.x + 40, local_rect.origin.y + local_rect.size.h - 24, local_rect.size.w - 50, 18),
-             GColorMelon, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentRight);
+             GRect(local_rect.origin.x + 39, local_rect.origin.y + local_rect.size.h - 21, local_rect.size.w - 47, 18),
+             GColorMelon, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
 
-  draw_label(ctx, s_second_zone_label_buffer, GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 6, utc_rect.size.w - 16, 20), GColorWhite);
+  draw_label(ctx, s_second_zone_label_buffer, GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 5, utc_rect.size.w - 16, 16), GColorWhite);
   draw_value(ctx, s_second_time_12h_buffer,
-             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 27, utc_rect.size.w - 16, 30),
+             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 22, utc_rect.size.w - 16, 30),
              GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
   draw_value(ctx, s_second_period_buffer,
-             GRect(utc_rect.origin.x + 10, utc_rect.origin.y + utc_rect.size.h - 24, 30, 18),
-             GColorCeleste, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
+             GRect(utc_rect.origin.x + 9, utc_rect.origin.y + utc_rect.size.h - 21, 28, 18),
+             GColorCeleste, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_second_time_24h_buffer,
-             GRect(utc_rect.origin.x + 40, utc_rect.origin.y + utc_rect.size.h - 24, utc_rect.size.w - 50, 18),
-             GColorCeleste, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentRight);
-  draw_value(ctx, s_second_zone_meta_buffer,
-             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 40, utc_rect.size.w - 16, 16),
-             GColorCeleste, FONT_KEY_GOTHIC_14, GTextAlignmentRight);
+             GRect(utc_rect.origin.x + 39, utc_rect.origin.y + utc_rect.size.h - 21, utc_rect.size.w - 47, 18),
+             GColorCeleste, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
 
-  draw_label(ctx, "WEATHER", GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 6, weather_rect.size.w - 16, 20), GColorWhite);
-  draw_value(ctx, s_weather_temp_buffer,
-             GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 30, weather_rect.size.w - 16, 28),
-             GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
-  draw_value(ctx, s_weather_cond_buffer,
-             GRect(weather_rect.origin.x + 8, weather_rect.origin.y + weather_rect.size.h - 40, weather_rect.size.w - 16, 18),
-             GColorYellow, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
+  draw_label(ctx, "WEATHER", GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 5, weather_rect.size.w - 16, 16), GColorWhite);
+  if (strcmp(s_weather_temp_buffer, "--") == 0) {
+    draw_value(ctx, s_weather_cond_buffer,
+               GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 25, weather_rect.size.w - 16, 20),
+               GColorYellow, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
+  } else {
+    draw_value(ctx, s_weather_temp_buffer,
+               GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 21, weather_rect.size.w - 16, 28),
+               GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
+    draw_value(ctx, s_weather_cond_buffer,
+               GRect(weather_rect.origin.x + 8, weather_rect.origin.y + weather_rect.size.h - 22, weather_rect.size.w - 16, 16),
+               GColorYellow, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
+  }
   draw_value(ctx, s_weather_city_buffer,
-             GRect(weather_rect.origin.x + 8, weather_rect.origin.y + weather_rect.size.h - 22, weather_rect.size.w - 16, 16),
+             GRect(weather_rect.origin.x + 8, weather_rect.origin.y + weather_rect.size.h - 16, weather_rect.size.w - 16, 14),
              GColorMintGreen, FONT_KEY_GOTHIC_14, GTextAlignmentLeft);
 
-  draw_label(ctx, "HEALTH", GRect(health_rect.origin.x + 8, health_rect.origin.y + 6, health_rect.size.w - 16, 20), GColorWhite);
+  draw_label(ctx, "HEALTH", GRect(health_rect.origin.x + 8, health_rect.origin.y + 5, health_rect.size.w - 16, 16), GColorWhite);
   draw_value(ctx, s_hr_buffer,
-             GRect(health_rect.origin.x + 8, health_rect.origin.y + 30, health_rect.size.w - 16, 28),
-             GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
+             GRect(health_rect.origin.x + 8, health_rect.origin.y + 23, health_rect.size.w - 16, 24),
+             GColorWhite, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentLeft);
   draw_value(ctx, "bpm",
-             GRect(health_rect.origin.x + 8, health_rect.origin.y + health_rect.size.h - 42, health_rect.size.w - 16, 16),
+             GRect(health_rect.origin.x + 8, health_rect.origin.y + health_rect.size.h - 34, 34, 16),
              GColorPastelYellow, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_steps_buffer,
-             GRect(health_rect.origin.x + 44, health_rect.origin.y + health_rect.size.h - 24, health_rect.size.w - 52, 18),
-             GColorWhite, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentRight);
+             GRect(health_rect.origin.x + 46, health_rect.origin.y + health_rect.size.h - 20, health_rect.size.w - 54, 18),
+             GColorWhite, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
   draw_value(ctx, "steps",
-             GRect(health_rect.origin.x + 8, health_rect.origin.y + health_rect.size.h - 24, 38, 18),
-             GColorPastelYellow, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
+             GRect(health_rect.origin.x + 8, health_rect.origin.y + health_rect.size.h - 20, 42, 18),
+             GColorPastelYellow, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
 }
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
