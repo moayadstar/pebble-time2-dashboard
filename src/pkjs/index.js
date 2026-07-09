@@ -175,8 +175,13 @@ var SAUDI_WEATHER_OPTIONS = [
   { label: "Al Baha, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 20.0129, longitude: 41.4677 }
 ];
 
+var CURRENT_WEATHER_LOCATION_OPTION = {
+  label: "Current location from phone",
+  mode: "gps"
+};
+
 var WEATHER_LOCATION_OPTIONS = [
-  { label: "Phone GPS", mode: "gps" }
+  CURRENT_WEATHER_LOCATION_OPTION
 ].concat(SAUDI_WEATHER_OPTIONS).concat(CAPITAL_TIME_OPTIONS).map(function (item) {
   return {
     label: item.label,
@@ -301,11 +306,15 @@ function getSavedWeatherLocation() {
   try {
     var raw = localStorage.getItem("weather_location");
     if (raw) {
-      return JSON.parse(raw);
+      var saved = JSON.parse(raw);
+      if (saved.mode === "gps") {
+        return CURRENT_WEATHER_LOCATION_OPTION;
+      }
+      return saved;
     }
   } catch (e) {}
 
-  return WEATHER_LOCATION_OPTIONS[1] || WEATHER_LOCATION_OPTIONS[0];
+  return CURRENT_WEATHER_LOCATION_OPTION;
 }
 
 var appMessageQueue = [];
@@ -459,12 +468,12 @@ function fetchWeather() {
   }
 
   navigator.geolocation.getCurrentPosition(function (position) {
-    fetchWeatherForCoordinates(position.coords.latitude, position.coords.longitude, "Phone GPS");
+    fetchWeatherForCoordinates(position.coords.latitude, position.coords.longitude, "Current");
   }, function () {
     sendError("GPS denied");
   }, {
     timeout: 15000,
-    maximumAge: 30 * 60 * 1000
+    maximumAge: 5 * 60 * 1000
   });
 }
 
@@ -483,10 +492,10 @@ function buildSettingsHtml() {
     '<label for="local-location">Local time city</label><select id="local-location"></select><div class="hint">This controls the red LOCAL panel.</div>' +
     '<h2>Travel Clock</h2><label for="time-search">Search travel city or capital</label><input id="time-search" type="text" placeholder="Search travel time city" value="' + escapeHtml(selectedTime.label) + '">' +
     '<label for="time-location">Travel time city</label><select id="time-location"></select><div class="hint">This controls the blue TRAVEL panel.</div>' +
-    '<h2>Weather</h2><label for="weather-search">Search country or city</label><input id="weather-search" type="text" placeholder="Search weather location" value="' + escapeHtml(selectedWeather.label || "Phone GPS") + '">' +
-    '<label for="weather-location">Weather location</label><select id="weather-location"></select><div class="hint">Choose Phone GPS to always use your current location.</div>' +
+    '<h2>Weather</h2><label for="weather-search">Search country or city</label><input id="weather-search" type="text" placeholder="Search weather location" value="' + escapeHtml(selectedWeather.label || CURRENT_WEATHER_LOCATION_OPTION.label) + '">' +
+    '<label for="weather-location">Weather location</label><select id="weather-location"></select><div class="hint">Choose Current location from phone to update weather automatically as you move.</div>' +
     '<button id="save">Save</button>' +
-    '<script>var LOCAL_TIME_OPTIONS=' + localOptionsJson + ';var TIME_OPTIONS=' + timeOptionsJson + ';var WEATHER_OPTIONS=' + weatherOptionsJson + ';var selectedLocalTimeLabel=' + JSON.stringify(selectedLocalTime.mode === "phone" ? PHONE_LOCAL_TIME_OPTION.label : selectedLocalTime.label) + ';var selectedTimeLabel=' + JSON.stringify(selectedTime.label) + ';var selectedWeatherLabel=' + JSON.stringify(selectedWeather.label || "Phone GPS") + ';' +
+    '<script>var LOCAL_TIME_OPTIONS=' + localOptionsJson + ';var TIME_OPTIONS=' + timeOptionsJson + ';var WEATHER_OPTIONS=' + weatherOptionsJson + ';var selectedLocalTimeLabel=' + JSON.stringify(selectedLocalTime.mode === "phone" ? PHONE_LOCAL_TIME_OPTION.label : selectedLocalTime.label) + ';var selectedTimeLabel=' + JSON.stringify(selectedTime.label) + ';var selectedWeatherLabel=' + JSON.stringify(selectedWeather.label || CURRENT_WEATHER_LOCATION_OPTION.label) + ';' +
     clientSettingsScript() +
     '</script></body></html>';
 }
