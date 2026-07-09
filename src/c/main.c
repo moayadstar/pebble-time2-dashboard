@@ -206,10 +206,10 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
              GRect(local_rect.origin.x + 8, local_rect.origin.y + 22, local_rect.size.w - 16, 30),
              GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
   draw_value(ctx, s_local_period_buffer,
-             GRect(local_rect.origin.x + 9, local_rect.origin.y + local_rect.size.h - 21, 28, 18),
+             GRect(local_rect.origin.x + 9, local_rect.origin.y + local_rect.size.h - 22, 34, 20),
              GColorMelon, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_local_time_24h_buffer,
-             GRect(local_rect.origin.x + 39, local_rect.origin.y + local_rect.size.h - 21, local_rect.size.w - 47, 18),
+             GRect(local_rect.origin.x + 44, local_rect.origin.y + local_rect.size.h - 22, local_rect.size.w - 52, 20),
              GColorMelon, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
 
   draw_label(ctx, s_second_zone_label_buffer, GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 5, utc_rect.size.w - 16, 16), GColorWhite);
@@ -217,10 +217,10 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
              GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 22, utc_rect.size.w - 16, 30),
              GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
   draw_value(ctx, s_second_period_buffer,
-             GRect(utc_rect.origin.x + 9, utc_rect.origin.y + utc_rect.size.h - 21, 28, 18),
+             GRect(utc_rect.origin.x + 9, utc_rect.origin.y + utc_rect.size.h - 22, 34, 20),
              GColorCeleste, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_second_time_24h_buffer,
-             GRect(utc_rect.origin.x + 39, utc_rect.origin.y + utc_rect.size.h - 21, utc_rect.size.w - 47, 18),
+             GRect(utc_rect.origin.x + 44, utc_rect.origin.y + utc_rect.size.h - 22, utc_rect.size.w - 52, 20),
              GColorCeleste, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
 
   draw_label(ctx, "WEATHER", GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 5, weather_rect.size.w - 16, 16), GColorWhite);
