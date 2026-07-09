@@ -352,24 +352,24 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
   draw_label(ctx, s_local_zone_label_buffer, GRect(local_rect.origin.x + 8, local_rect.origin.y + 5, local_rect.size.w - 16, 16), GColorWhite);
   draw_value_clip(ctx, s_local_time_12h_buffer,
                   GRect(local_rect.origin.x + 8, local_rect.origin.y + 17, local_rect.size.w - 16, 30),
-                  GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
+                  GColorWhite, FONT_KEY_GOTHIC_28, GTextAlignmentLeft);
   draw_value(ctx, s_local_period_buffer,
              GRect(local_rect.origin.x + 9, local_rect.origin.y + local_rect.size.h - 38, 32, 16),
              GColorMelon, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
   draw_value_clip(ctx, s_local_time_24h_buffer,
                   GRect(local_rect.origin.x + 8, local_rect.origin.y + local_rect.size.h - 29, local_rect.size.w - 16, 24),
-                  GColorMelon, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
+                  GColorMelon, FONT_KEY_GOTHIC_24, GTextAlignmentRight);
 
   draw_label(ctx, "TRAVEL", GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 5, utc_rect.size.w - 16, 16), GColorWhite);
   draw_value_clip(ctx, s_second_time_12h_buffer,
                   GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 17, utc_rect.size.w - 16, 30),
-                  GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
+                  GColorWhite, FONT_KEY_GOTHIC_28, GTextAlignmentLeft);
   draw_value(ctx, s_second_period_buffer,
              GRect(utc_rect.origin.x + 9, utc_rect.origin.y + utc_rect.size.h - 38, 32, 16),
              GColorCeleste, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
   draw_value_clip(ctx, s_second_time_24h_buffer,
                   GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 29, utc_rect.size.w - 16, 24),
-                  GColorCeleste, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
+                  GColorCeleste, FONT_KEY_GOTHIC_24, GTextAlignmentRight);
 
   draw_weather_art(ctx, weather_rect, s_weather_code, s_heartbeat_flash);
   if (strcmp(s_weather_temp_buffer, "--") == 0) {
@@ -379,7 +379,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
   } else {
     draw_value_clip(ctx, s_weather_temp_buffer,
                     GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 41, weather_rect.size.w - 36, 24),
-                    GColorWhite, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
+                    GColorWhite, FONT_KEY_GOTHIC_24, GTextAlignmentRight);
     draw_value(ctx, "C",
                GRect(weather_rect.origin.x + weather_rect.size.w - 26, weather_rect.origin.y + 43, 18, 16),
                GColorWhite, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
@@ -399,13 +399,13 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
                   s_heartbeat_flash ? GColorRed : GColorPastelYellow);
   draw_value(ctx, s_hr_buffer,
              GRect(health_rect.origin.x + 8, health_rect.origin.y + 23, health_rect.size.w - 16, 24),
-             GColorWhite, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentLeft);
+             GColorWhite, FONT_KEY_GOTHIC_24, GTextAlignmentLeft);
   draw_value(ctx, "bpm",
              GRect(health_rect.origin.x + 8, health_rect.origin.y + health_rect.size.h - 34, 34, 16),
              GColorPastelYellow, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_steps_buffer,
              GRect(health_rect.origin.x + 46, health_rect.origin.y + health_rect.size.h - 20, health_rect.size.w - 54, 18),
-             GColorWhite, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
+             GColorWhite, FONT_KEY_GOTHIC_18, GTextAlignmentRight);
   draw_value(ctx, "steps",
              GRect(health_rect.origin.x + 8, health_rect.origin.y + health_rect.size.h - 20, 42, 18),
              GColorPastelYellow, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
