@@ -203,25 +203,25 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
 
   draw_label(ctx, "LOCAL", GRect(local_rect.origin.x + 8, local_rect.origin.y + 5, local_rect.size.w - 16, 16), GColorWhite);
   draw_value(ctx, s_local_time_12h_buffer,
-             GRect(local_rect.origin.x + 8, local_rect.origin.y + 22, local_rect.size.w - 16, 30),
-             GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
+             GRect(local_rect.origin.x + 8, local_rect.origin.y + 21, local_rect.size.w - 16, 24),
+             GColorWhite, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_local_period_buffer,
-             GRect(local_rect.origin.x + 9, local_rect.origin.y + local_rect.size.h - 22, 34, 20),
-             GColorMelon, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
+             GRect(local_rect.origin.x + 9, local_rect.origin.y + local_rect.size.h - 40, 32, 16),
+             GColorMelon, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_local_time_24h_buffer,
-             GRect(local_rect.origin.x + 44, local_rect.origin.y + local_rect.size.h - 22, local_rect.size.w - 52, 20),
-             GColorMelon, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
+             GRect(local_rect.origin.x + 8, local_rect.origin.y + local_rect.size.h - 29, local_rect.size.w - 16, 24),
+             GColorMelon, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
 
   draw_label(ctx, s_second_zone_label_buffer, GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 5, utc_rect.size.w - 16, 16), GColorWhite);
   draw_value(ctx, s_second_time_12h_buffer,
-             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 22, utc_rect.size.w - 16, 30),
-             GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
+             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 21, utc_rect.size.w - 16, 24),
+             GColorWhite, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_second_period_buffer,
-             GRect(utc_rect.origin.x + 9, utc_rect.origin.y + utc_rect.size.h - 22, 34, 20),
-             GColorCeleste, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
+             GRect(utc_rect.origin.x + 9, utc_rect.origin.y + utc_rect.size.h - 40, 32, 16),
+             GColorCeleste, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_second_time_24h_buffer,
-             GRect(utc_rect.origin.x + 44, utc_rect.origin.y + utc_rect.size.h - 22, utc_rect.size.w - 52, 20),
-             GColorCeleste, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
+             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 29, utc_rect.size.w - 16, 24),
+             GColorCeleste, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
 
   draw_label(ctx, "WEATHER", GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 5, weather_rect.size.w - 16, 16), GColorWhite);
   if (strcmp(s_weather_temp_buffer, "--") == 0) {
