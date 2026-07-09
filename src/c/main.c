@@ -25,9 +25,12 @@ static Window *s_main_window;
 static Layer *s_canvas_layer;
 
 static char s_date_buffer[32];
-static char s_local_time_buffer[16];
-static char s_local_suffix_buffer[4];
-static char s_second_time_buffer[16];
+static char s_local_time_12h_buffer[16];
+static char s_local_time_24h_buffer[16];
+static char s_local_period_buffer[4];
+static char s_second_time_12h_buffer[16];
+static char s_second_time_24h_buffer[16];
+static char s_second_period_buffer[4];
 static char s_second_zone_label_buffer[24] = "UTC";
 static char s_second_zone_meta_buffer[16] = "UTC+00";
 static char s_weather_temp_buffer[16] = "--";
@@ -115,18 +118,20 @@ static void update_time(void) {
   struct tm *second_zone_time = gmtime(&second_zone_now);
 
   strftime(s_date_buffer, sizeof(s_date_buffer), "%a  %d %b", local_time);
-  strftime(s_second_time_buffer, sizeof(s_second_time_buffer), "%H:%M", second_zone_time);
 
-  if (clock_is_24h_style()) {
-    strftime(s_local_time_buffer, sizeof(s_local_time_buffer), "%H:%M", local_time);
-    snprintf(s_local_suffix_buffer, sizeof(s_local_suffix_buffer), "24");
-  } else {
-    strftime(s_local_time_buffer, sizeof(s_local_time_buffer), "%I:%M", local_time);
-    if (s_local_time_buffer[0] == '0') {
-      memmove(s_local_time_buffer, s_local_time_buffer + 1, strlen(s_local_time_buffer));
-    }
-    strftime(s_local_suffix_buffer, sizeof(s_local_suffix_buffer), "%p", local_time);
+  strftime(s_local_time_12h_buffer, sizeof(s_local_time_12h_buffer), "%I:%M", local_time);
+  if (s_local_time_12h_buffer[0] == '0') {
+    memmove(s_local_time_12h_buffer, s_local_time_12h_buffer + 1, strlen(s_local_time_12h_buffer));
   }
+  strftime(s_local_period_buffer, sizeof(s_local_period_buffer), "%p", local_time);
+  strftime(s_local_time_24h_buffer, sizeof(s_local_time_24h_buffer), "%H:%M", local_time);
+
+  strftime(s_second_time_12h_buffer, sizeof(s_second_time_12h_buffer), "%I:%M", second_zone_time);
+  if (s_second_time_12h_buffer[0] == '0') {
+    memmove(s_second_time_12h_buffer, s_second_time_12h_buffer + 1, strlen(s_second_time_12h_buffer));
+  }
+  strftime(s_second_period_buffer, sizeof(s_second_period_buffer), "%p", second_zone_time);
+  strftime(s_second_time_24h_buffer, sizeof(s_second_time_24h_buffer), "%H:%M", second_zone_time);
 
   update_health();
 }
@@ -183,20 +188,29 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
   draw_panel(ctx, health_rect, GColorPurple, GColorPastelYellow);
 
   draw_label(ctx, "LOCAL", GRect(local_rect.origin.x + 8, local_rect.origin.y + 6, local_rect.size.w - 16, 20), GColorWhite);
-  draw_value(ctx, s_local_time_buffer,
-             GRect(local_rect.origin.x + 8, local_rect.origin.y + 26, local_rect.size.w - 16, 40),
+  draw_value(ctx, s_local_time_12h_buffer,
+             GRect(local_rect.origin.x + 8, local_rect.origin.y + 24, local_rect.size.w - 16, 34),
              GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
-  draw_value(ctx, s_local_suffix_buffer,
-             GRect(local_rect.origin.x + 8, local_rect.origin.y + local_rect.size.h - 28, local_rect.size.w - 16, 22),
+  draw_value(ctx, s_local_period_buffer,
+             GRect(local_rect.origin.x + 8, local_rect.origin.y + 52, local_rect.size.w - 16, 18),
+             GColorMelon, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
+  draw_value(ctx, s_local_time_24h_buffer,
+             GRect(local_rect.origin.x + 8, local_rect.origin.y + local_rect.size.h - 29, local_rect.size.w - 16, 24),
              GColorMelon, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
 
   draw_label(ctx, s_second_zone_label_buffer, GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 6, utc_rect.size.w - 16, 20), GColorWhite);
-  draw_value(ctx, s_second_time_buffer,
-             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 26, utc_rect.size.w - 16, 40),
+  draw_value(ctx, s_second_time_12h_buffer,
+             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 24, utc_rect.size.w - 16, 34),
              GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
-  draw_value(ctx, s_second_zone_meta_buffer,
-             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 28, utc_rect.size.w - 16, 22),
+  draw_value(ctx, s_second_period_buffer,
+             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 52, utc_rect.size.w - 16, 18),
              GColorCeleste, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
+  draw_value(ctx, s_second_time_24h_buffer,
+             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 48, utc_rect.size.w - 16, 22),
+             GColorCeleste, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
+  draw_value(ctx, s_second_zone_meta_buffer,
+             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 27, utc_rect.size.w - 16, 20),
+             GColorCeleste, FONT_KEY_GOTHIC_14, GTextAlignmentRight);
 
   draw_label(ctx, "WEATHER", GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 6, weather_rect.size.w - 16, 20), GColorWhite);
   draw_value(ctx, s_weather_temp_buffer,
