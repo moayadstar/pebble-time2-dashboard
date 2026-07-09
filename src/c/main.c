@@ -175,6 +175,13 @@ static void draw_value(GContext *ctx, const char *text, GRect rect, GColor color
                      GTextOverflowModeTrailingEllipsis, alignment, NULL);
 }
 
+static void draw_value_clip(GContext *ctx, const char *text, GRect rect, GColor color, const char *font_key,
+                            GTextAlignment alignment) {
+  graphics_context_set_text_color(ctx, color);
+  graphics_draw_text(ctx, text, fonts_get_system_font(font_key), rect,
+                     GTextOverflowModeFill, alignment, NULL);
+}
+
 static void draw_panel(GContext *ctx, GRect rect, GColor background, GColor accent) {
   graphics_context_set_fill_color(ctx, background);
   graphics_fill_rect(ctx, rect, 12, GCornersAll);
@@ -214,26 +221,26 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
   draw_panel(ctx, health_rect, GColorPurple, GColorPastelYellow);
 
   draw_label(ctx, s_local_zone_label_buffer, GRect(local_rect.origin.x + 8, local_rect.origin.y + 5, local_rect.size.w - 16, 16), GColorWhite);
-  draw_value(ctx, s_local_time_12h_buffer,
-             GRect(local_rect.origin.x + 8, local_rect.origin.y + 17, local_rect.size.w - 16, 30),
-             GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
+  draw_value_clip(ctx, s_local_time_12h_buffer,
+                  GRect(local_rect.origin.x + 8, local_rect.origin.y + 17, local_rect.size.w - 16, 30),
+                  GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
   draw_value(ctx, s_local_period_buffer,
              GRect(local_rect.origin.x + 9, local_rect.origin.y + local_rect.size.h - 38, 32, 16),
              GColorMelon, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
-  draw_value(ctx, s_local_time_24h_buffer,
-             GRect(local_rect.origin.x + 8, local_rect.origin.y + local_rect.size.h - 31, local_rect.size.w - 16, 30),
-             GColorMelon, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentRight);
+  draw_value_clip(ctx, s_local_time_24h_buffer,
+                  GRect(local_rect.origin.x + 8, local_rect.origin.y + local_rect.size.h - 29, local_rect.size.w - 16, 24),
+                  GColorMelon, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
 
   draw_label(ctx, "TRAVEL", GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 5, utc_rect.size.w - 16, 16), GColorWhite);
-  draw_value(ctx, s_second_time_12h_buffer,
-             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 17, utc_rect.size.w - 16, 30),
-             GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
+  draw_value_clip(ctx, s_second_time_12h_buffer,
+                  GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 17, utc_rect.size.w - 16, 30),
+                  GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
   draw_value(ctx, s_second_period_buffer,
              GRect(utc_rect.origin.x + 9, utc_rect.origin.y + utc_rect.size.h - 38, 32, 16),
              GColorCeleste, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
-  draw_value(ctx, s_second_time_24h_buffer,
-             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 31, utc_rect.size.w - 16, 30),
-             GColorCeleste, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentRight);
+  draw_value_clip(ctx, s_second_time_24h_buffer,
+                  GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 29, utc_rect.size.w - 16, 24),
+                  GColorCeleste, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
 
   draw_label(ctx, "WEATHER", GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 5, weather_rect.size.w - 16, 16), GColorWhite);
   if (strcmp(s_weather_temp_buffer, "--") == 0) {
