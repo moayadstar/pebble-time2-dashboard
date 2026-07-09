@@ -283,8 +283,34 @@ function getSavedWeatherLocation() {
   return WEATHER_LOCATION_OPTIONS[1] || WEATHER_LOCATION_OPTIONS[0];
 }
 
+var appMessageQueue = [];
+var appMessageSending = false;
+
+function flushAppMessageQueue() {
+  if (appMessageSending || appMessageQueue.length === 0) {
+    return;
+  }
+
+  appMessageSending = true;
+  var payload = appMessageQueue.shift();
+
+  Pebble.sendAppMessage(payload, function () {
+    appMessageSending = false;
+    flushAppMessageQueue();
+  }, function () {
+    appMessageQueue.unshift(payload);
+    appMessageSending = false;
+    setTimeout(flushAppMessageQueue, 500);
+  });
+}
+
+function queueAppMessage(payload) {
+  appMessageQueue.push(payload);
+  flushAppMessageQueue();
+}
+
 function sendWeather(payload) {
-  Pebble.sendAppMessage(payload, function () {}, function () {});
+  queueAppMessage(payload);
 }
 
 function compactLabel(label, fallback) {
@@ -301,19 +327,19 @@ function compactLabel(label, fallback) {
 function sendSecondZone(zone) {
   var normalized = normalizeTimeZone(zone);
 
-  Pebble.sendAppMessage({
+  queueAppMessage({
     SECOND_ZONE_OFFSET: normalized.offset,
     SECOND_ZONE_LABEL: normalized.label
-  }, function () {}, function () {});
+  });
 }
 
 function sendLocalZone(zone) {
   var normalized = normalizeTimeZone(zone);
 
-  Pebble.sendAppMessage({
+  queueAppMessage({
     LOCAL_ZONE_OFFSET: normalized.offset,
     LOCAL_ZONE_LABEL: normalized.label
-  }, function () {}, function () {});
+  });
 }
 
 function sendError(message) {

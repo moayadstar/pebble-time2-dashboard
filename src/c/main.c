@@ -92,7 +92,7 @@ static void save_settings(void) {
   persist_write_string(PERSIST_KEY_SECOND_ZONE_LABEL, s_second_zone_label_buffer);
 }
 
-static void request_weather(void) {
+static void request_phone_sync(void) {
   DictionaryIterator *out_iter;
   if (app_message_outbox_begin(&out_iter) != APP_MSG_OK) {
     return;
@@ -140,24 +140,24 @@ static void update_time(void) {
   time_t now = time(NULL);
   time_t local_zone_now = now + (s_local_zone_offset_minutes * 60);
   time_t second_zone_now = now + (s_second_zone_offset_minutes * 60);
-  struct tm *local_time = gmtime(&local_zone_now);
-  struct tm *second_zone_time = gmtime(&second_zone_now);
+  struct tm local_time = *gmtime(&local_zone_now);
+  struct tm second_zone_time = *gmtime(&second_zone_now);
 
-  strftime(s_date_buffer, sizeof(s_date_buffer), "%a  %d %b", local_time);
+  strftime(s_date_buffer, sizeof(s_date_buffer), "%a  %d %b", &local_time);
 
-  strftime(s_local_time_12h_buffer, sizeof(s_local_time_12h_buffer), "%I:%M", local_time);
+  strftime(s_local_time_12h_buffer, sizeof(s_local_time_12h_buffer), "%I:%M", &local_time);
   if (s_local_time_12h_buffer[0] == '0') {
     memmove(s_local_time_12h_buffer, s_local_time_12h_buffer + 1, strlen(s_local_time_12h_buffer));
   }
-  strftime(s_local_period_buffer, sizeof(s_local_period_buffer), "%p", local_time);
-  strftime(s_local_time_24h_buffer, sizeof(s_local_time_24h_buffer), "%H:%M", local_time);
+  strftime(s_local_period_buffer, sizeof(s_local_period_buffer), "%p", &local_time);
+  strftime(s_local_time_24h_buffer, sizeof(s_local_time_24h_buffer), "%H:%M", &local_time);
 
-  strftime(s_second_time_12h_buffer, sizeof(s_second_time_12h_buffer), "%I:%M", second_zone_time);
+  strftime(s_second_time_12h_buffer, sizeof(s_second_time_12h_buffer), "%I:%M", &second_zone_time);
   if (s_second_time_12h_buffer[0] == '0') {
     memmove(s_second_time_12h_buffer, s_second_time_12h_buffer + 1, strlen(s_second_time_12h_buffer));
   }
-  strftime(s_second_period_buffer, sizeof(s_second_period_buffer), "%p", second_zone_time);
-  strftime(s_second_time_24h_buffer, sizeof(s_second_time_24h_buffer), "%H:%M", second_zone_time);
+  strftime(s_second_period_buffer, sizeof(s_second_period_buffer), "%p", &second_zone_time);
+  strftime(s_second_time_24h_buffer, sizeof(s_second_time_24h_buffer), "%H:%M", &second_zone_time);
 
   update_health();
 }
@@ -269,8 +269,8 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   update_time();
-  if (tick_time->tm_min % 30 == 0) {
-    request_weather();
+  if (tick_time->tm_min % 15 == 0) {
+    request_phone_sync();
   }
   layer_mark_dirty(s_canvas_layer);
 }
@@ -369,7 +369,7 @@ static void init(void) {
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
   s_health_events_subscribed = health_service_events_subscribe(health_handler, NULL);
   configure_heart_rate_sensor();
-  request_weather();
+  request_phone_sync();
 }
 
 static void deinit(void) {
