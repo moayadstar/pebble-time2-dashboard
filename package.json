@@ -1,9 +1,16 @@
 {
   "name": "pebble-time2-dashboard",
   "author": "OpenAI Codex",
-  "version": "1.0.0",
-  "keywords": ["pebble-watchface"],
+  "version": "1.0.1",
+  "keywords": [
+    "pebble-watchface"
+  ],
   "private": true,
+  "scripts": {
+    "version:patch": "node tools/version-guard.js --bump patch",
+    "version:check": "node tools/version-guard.js --check",
+    "prebuild": "node tools/version-guard.js --check"
+  },
   "dependencies": {},
   "pebble": {
     "displayName": "Time2 Dashboard",

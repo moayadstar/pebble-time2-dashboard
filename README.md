@@ -9,15 +9,17 @@ Color Pebble watchface designed for `Pebble Time 2 / emery`.
 - Top right: UTC time
 - Bottom left: weather
 - Bottom right: steps and heart rate
-- Settings page: choose the second time zone and a searchable weather location list
+- Settings page: search and choose the second clock city plus weather location
 
 ## Notes
 
 - Weather is fetched on the phone side with `Open-Meteo`, so it does not need an API key.
 - Weather refreshes on launch and every 30 minutes.
-- Weather can use `Phone GPS` or a fixed city/country selected from a large built-in list plus live search suggestions.
+- Weather can use `Phone GPS` or a fixed city/country selected from a large built-in capitals list plus live city search suggestions.
 - Heart rate only appears on watches and firmware that expose `HealthMetricHeartRateBPM`.
-- The second time zone can be changed from the watchface settings screen in the phone app.
+- The second clock can be changed from the watchface settings screen in the phone app.
+- Version updates are guarded by `tools/version-guard.js`; every local commit bumps the patch version and checks Pebble Time 2 compatibility.
+- Pebble compatibility is kept through `sdkVersion: 3` and the `emery` target platform for Pebble Time 2.
 
 ## Files
 
@@ -27,4 +29,8 @@ Color Pebble watchface designed for `Pebble Time 2 / emery`.
 
 ## Build
 
-This workspace does not currently have the `pebble` CLI installed, so the project is prepared but not compiled here yet.
+Build with Pebble CLI from WSL:
+
+```sh
+pebble build
+```
