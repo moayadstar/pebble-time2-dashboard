@@ -15,6 +15,11 @@ enum {
 
 static Window *s_main_window;
 static Layer *s_canvas_layer;
+static GBitmap *s_weather_sun_bitmap;
+static GBitmap *s_weather_cloud_bitmap;
+static GBitmap *s_weather_rain_bitmap;
+static GBitmap *s_weather_snow_bitmap;
+static GBitmap *s_weather_storm_bitmap;
 
 static char s_date_buffer[32];
 static char s_local_time_12h_buffer[16];
@@ -211,7 +216,7 @@ static void draw_weather_icon(GContext *ctx, GPoint center, int code, bool anima
     return;
   }
 
-  if (code <= 3 || code <= 48) {
+  if (code <= 3 || code == 45 || code == 48) {
     const int drift = animate ? 1 : -1;
     graphics_context_set_fill_color(ctx, GColorLightGray);
     graphics_fill_circle(ctx, GPoint(center.x - 8 + drift, center.y + 3), 8);
@@ -221,7 +226,7 @@ static void draw_weather_icon(GContext *ctx, GPoint center, int code, bool anima
     return;
   }
 
-  if (code <= 67 || code <= 82) {
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
     const int drop = animate ? 2 : 0;
     graphics_context_set_fill_color(ctx, GColorCyan);
     graphics_fill_circle(ctx, GPoint(center.x - 8, center.y - 3), 8);
@@ -235,7 +240,7 @@ static void draw_weather_icon(GContext *ctx, GPoint center, int code, bool anima
     return;
   }
 
-  if (code <= 77) {
+  if (code >= 71 && code <= 77) {
     graphics_context_set_stroke_color(ctx, GColorWhite);
     graphics_draw_circle(ctx, center, 11);
     graphics_draw_line(ctx, GPoint(center.x - 14, center.y), GPoint(center.x + 14, center.y));
@@ -249,6 +254,61 @@ static void draw_weather_icon(GContext *ctx, GPoint center, int code, bool anima
   graphics_draw_line(ctx, GPoint(center.x + 1, center.y - 14), GPoint(center.x - 7, center.y + 1));
   graphics_draw_line(ctx, GPoint(center.x - 7, center.y + 1), GPoint(center.x + 3, center.y + 1));
   graphics_draw_line(ctx, GPoint(center.x + 3, center.y + 1), GPoint(center.x - 3, center.y + 15));
+}
+
+static GBitmap *weather_bitmap_for_code(int code) {
+  if (code < 0) {
+    return s_weather_cloud_bitmap;
+  }
+
+  if (code == 0) {
+    return s_weather_sun_bitmap;
+  }
+
+  if (code <= 3 || code == 45 || code == 48) {
+    return s_weather_cloud_bitmap;
+  }
+
+  if (code >= 71 && code <= 77) {
+    return s_weather_snow_bitmap;
+  }
+
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+    return s_weather_rain_bitmap;
+  }
+
+  if (code >= 95) {
+    return s_weather_storm_bitmap;
+  }
+
+  return s_weather_cloud_bitmap;
+}
+
+static void draw_weather_art(GContext *ctx, GRect panel_rect, int code, bool animate) {
+  GBitmap *bitmap = weather_bitmap_for_code(code);
+  const int icon_size = 36;
+  const int bob = animate ? 1 : 0;
+  GRect icon_rect = GRect(panel_rect.origin.x + ((panel_rect.size.w - icon_size) / 2),
+                         panel_rect.origin.y + 4 + bob, icon_size, icon_size);
+
+  if (bitmap) {
+    graphics_draw_bitmap_in_rect(ctx, bitmap, icon_rect);
+  } else {
+    draw_weather_icon(ctx, GPoint(panel_rect.origin.x + (panel_rect.size.w / 2), panel_rect.origin.y + 23),
+                      code, animate);
+  }
+
+  if (code == 0 && animate) {
+    graphics_context_set_stroke_color(ctx, GColorChromeYellow);
+    graphics_draw_circle(ctx, GPoint(icon_rect.origin.x + 18, icon_rect.origin.y + 18), 17);
+  } else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+    const int drop = animate ? 2 : 0;
+    graphics_context_set_stroke_color(ctx, GColorCeleste);
+    graphics_draw_line(ctx, GPoint(icon_rect.origin.x + 11, icon_rect.origin.y + 29 + drop),
+                       GPoint(icon_rect.origin.x + 8, icon_rect.origin.y + 35 + drop));
+    graphics_draw_line(ctx, GPoint(icon_rect.origin.x + 27, icon_rect.origin.y + 29),
+                       GPoint(icon_rect.origin.x + 24, icon_rect.origin.y + 35));
+  }
 }
 
 static void draw_heart_icon(GContext *ctx, GPoint origin, GColor color) {
@@ -311,8 +371,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
                   GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 29, utc_rect.size.w - 16, 24),
                   GColorCeleste, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
 
-  draw_weather_icon(ctx, GPoint(weather_rect.origin.x + (weather_rect.size.w / 2), weather_rect.origin.y + 23),
-                    s_weather_code, s_heartbeat_flash);
+  draw_weather_art(ctx, weather_rect, s_weather_code, s_heartbeat_flash);
   if (strcmp(s_weather_temp_buffer, "--") == 0) {
     draw_value(ctx, s_weather_cond_buffer,
                GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 43, weather_rect.size.w - 16, 18),
@@ -432,6 +491,12 @@ static void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
+  s_weather_sun_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_WEATHER_SUN);
+  s_weather_cloud_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_WEATHER_CLOUD);
+  s_weather_rain_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_WEATHER_RAIN);
+  s_weather_snow_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_WEATHER_SNOW);
+  s_weather_storm_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_WEATHER_STORM);
+
   s_canvas_layer = layer_create(bounds);
   layer_set_update_proc(s_canvas_layer, canvas_update_proc);
   layer_add_child(window_layer, s_canvas_layer);
@@ -439,6 +504,21 @@ static void main_window_load(Window *window) {
 
 static void main_window_unload(Window *window) {
   layer_destroy(s_canvas_layer);
+  if (s_weather_sun_bitmap) {
+    gbitmap_destroy(s_weather_sun_bitmap);
+  }
+  if (s_weather_cloud_bitmap) {
+    gbitmap_destroy(s_weather_cloud_bitmap);
+  }
+  if (s_weather_rain_bitmap) {
+    gbitmap_destroy(s_weather_rain_bitmap);
+  }
+  if (s_weather_snow_bitmap) {
+    gbitmap_destroy(s_weather_snow_bitmap);
+  }
+  if (s_weather_storm_bitmap) {
+    gbitmap_destroy(s_weather_storm_bitmap);
+  }
 }
 
 static void init(void) {
