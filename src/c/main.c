@@ -102,12 +102,12 @@ static void update_health(void) {
   if (s_hr_available) {
     HealthValue bpm = health_service_peek_current_value(HealthMetricHeartRateBPM);
     if (bpm > 0) {
-      snprintf(s_hr_buffer, sizeof(s_hr_buffer), "%ld bpm", (long)bpm);
+      snprintf(s_hr_buffer, sizeof(s_hr_buffer), "%ld", (long)bpm);
     } else {
-      snprintf(s_hr_buffer, sizeof(s_hr_buffer), "-- bpm");
+      snprintf(s_hr_buffer, sizeof(s_hr_buffer), "--");
     }
   } else {
-    snprintf(s_hr_buffer, sizeof(s_hr_buffer), "-- bpm");
+    snprintf(s_hr_buffer, sizeof(s_hr_buffer), "--");
   }
 }
 
@@ -224,15 +224,18 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
              GColorMintGreen, FONT_KEY_GOTHIC_14, GTextAlignmentLeft);
 
   draw_label(ctx, "HEALTH", GRect(health_rect.origin.x + 8, health_rect.origin.y + 6, health_rect.size.w - 16, 20), GColorWhite);
-  draw_value(ctx, s_steps_buffer,
+  draw_value(ctx, s_hr_buffer,
              GRect(health_rect.origin.x + 8, health_rect.origin.y + 22, health_rect.size.w - 16, 38),
              GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
-  draw_value(ctx, "steps",
+  draw_value(ctx, "bpm",
              GRect(health_rect.origin.x + 10, health_rect.origin.y + 55, health_rect.size.w - 20, 18),
              GColorPastelYellow, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
-  draw_value(ctx, s_hr_buffer,
+  draw_value(ctx, s_steps_buffer,
              GRect(health_rect.origin.x + 8, health_rect.origin.y + health_rect.size.h - 28, health_rect.size.w - 16, 22),
-             GColorWhite, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
+             GColorWhite, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentRight);
+  draw_value(ctx, "steps",
+             GRect(health_rect.origin.x + 8, health_rect.origin.y + health_rect.size.h - 28, health_rect.size.w - 16, 22),
+             GColorPastelYellow, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
 }
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {

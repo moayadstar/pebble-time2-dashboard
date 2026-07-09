@@ -9,174 +9,199 @@ function codeToLabel(code) {
   return "Weather";
 }
 
-var SECOND_ZONE_OPTIONS = [
-  { label: "UTC", offset: 0 },
-  { label: "Riyadh", offset: 180 },
-  { label: "Dubai", offset: 240 },
-  { label: "Cairo", offset: 120 },
-  { label: "Istanbul", offset: 180 },
-  { label: "London", offset: 0 },
-  { label: "Paris", offset: 60 },
-  { label: "Moscow", offset: 180 },
-  { label: "Delhi", offset: 330 },
-  { label: "Bangkok", offset: 420 },
-  { label: "Beijing", offset: 480 },
-  { label: "Tokyo", offset: 540 },
-  { label: "Sydney", offset: 600 },
-  { label: "New York", offset: -300 },
-  { label: "Chicago", offset: -360 },
-  { label: "Denver", offset: -420 },
-  { label: "Los Angeles", offset: -480 }
+var CAPITAL_TIME_OPTIONS = [
+  { label: "UTC", timezone: "UTC", latitude: 0, longitude: 0 },
+  { label: "Riyadh, Saudi Arabia", timezone: "Asia/Riyadh", latitude: 24.7136, longitude: 46.6753 },
+  { label: "Abu Dhabi, UAE", timezone: "Asia/Dubai", latitude: 24.4539, longitude: 54.3773 },
+  { label: "Doha, Qatar", timezone: "Asia/Qatar", latitude: 25.2854, longitude: 51.531 },
+  { label: "Kuwait City, Kuwait", timezone: "Asia/Kuwait", latitude: 29.3759, longitude: 47.9774 },
+  { label: "Manama, Bahrain", timezone: "Asia/Bahrain", latitude: 26.2235, longitude: 50.5876 },
+  { label: "Muscat, Oman", timezone: "Asia/Muscat", latitude: 23.588, longitude: 58.3829 },
+  { label: "Cairo, Egypt", timezone: "Africa/Cairo", latitude: 30.0444, longitude: 31.2357 },
+  { label: "Amman, Jordan", timezone: "Asia/Amman", latitude: 31.9539, longitude: 35.9106 },
+  { label: "Beirut, Lebanon", timezone: "Asia/Beirut", latitude: 33.8938, longitude: 35.5018 },
+  { label: "Damascus, Syria", timezone: "Asia/Damascus", latitude: 33.5138, longitude: 36.2765 },
+  { label: "Baghdad, Iraq", timezone: "Asia/Baghdad", latitude: 33.3152, longitude: 44.3661 },
+  { label: "Sanaa, Yemen", timezone: "Asia/Aden", latitude: 15.3694, longitude: 44.191 },
+  { label: "Jerusalem, Palestine", timezone: "Asia/Jerusalem", latitude: 31.7683, longitude: 35.2137 },
+  { label: "Khartoum, Sudan", timezone: "Africa/Khartoum", latitude: 15.5007, longitude: 32.5599 },
+  { label: "Tripoli, Libya", timezone: "Africa/Tripoli", latitude: 32.8872, longitude: 13.1913 },
+  { label: "Tunis, Tunisia", timezone: "Africa/Tunis", latitude: 36.8065, longitude: 10.1815 },
+  { label: "Algiers, Algeria", timezone: "Africa/Algiers", latitude: 36.7538, longitude: 3.0588 },
+  { label: "Rabat, Morocco", timezone: "Africa/Casablanca", latitude: 34.0209, longitude: -6.8416 },
+  { label: "Nouakchott, Mauritania", timezone: "Africa/Nouakchott", latitude: 18.0735, longitude: -15.9582 },
+  { label: "Ankara, Turkiye", timezone: "Europe/Istanbul", latitude: 39.9334, longitude: 32.8597 },
+  { label: "Tehran, Iran", timezone: "Asia/Tehran", latitude: 35.6892, longitude: 51.389 },
+  { label: "Kabul, Afghanistan", timezone: "Asia/Kabul", latitude: 34.5553, longitude: 69.2075 },
+  { label: "Islamabad, Pakistan", timezone: "Asia/Karachi", latitude: 33.6844, longitude: 73.0479 },
+  { label: "New Delhi, India", timezone: "Asia/Kolkata", latitude: 28.6139, longitude: 77.209 },
+  { label: "Dhaka, Bangladesh", timezone: "Asia/Dhaka", latitude: 23.8103, longitude: 90.4125 },
+  { label: "Kathmandu, Nepal", timezone: "Asia/Kathmandu", latitude: 27.7172, longitude: 85.324 },
+  { label: "Colombo, Sri Lanka", timezone: "Asia/Colombo", latitude: 6.9271, longitude: 79.8612 },
+  { label: "Male, Maldives", timezone: "Indian/Maldives", latitude: 4.1755, longitude: 73.5093 },
+  { label: "Bangkok, Thailand", timezone: "Asia/Bangkok", latitude: 13.7563, longitude: 100.5018 },
+  { label: "Kuala Lumpur, Malaysia", timezone: "Asia/Kuala_Lumpur", latitude: 3.139, longitude: 101.6869 },
+  { label: "Singapore, Singapore", timezone: "Asia/Singapore", latitude: 1.3521, longitude: 103.8198 },
+  { label: "Jakarta, Indonesia", timezone: "Asia/Jakarta", latitude: -6.2088, longitude: 106.8456 },
+  { label: "Manila, Philippines", timezone: "Asia/Manila", latitude: 14.5995, longitude: 120.9842 },
+  { label: "Hanoi, Vietnam", timezone: "Asia/Ho_Chi_Minh", latitude: 21.0278, longitude: 105.8342 },
+  { label: "Phnom Penh, Cambodia", timezone: "Asia/Phnom_Penh", latitude: 11.5564, longitude: 104.9282 },
+  { label: "Vientiane, Laos", timezone: "Asia/Vientiane", latitude: 17.9757, longitude: 102.6331 },
+  { label: "Naypyidaw, Myanmar", timezone: "Asia/Yangon", latitude: 19.7633, longitude: 96.0785 },
+  { label: "Beijing, China", timezone: "Asia/Shanghai", latitude: 39.9042, longitude: 116.4074 },
+  { label: "Taipei, Taiwan", timezone: "Asia/Taipei", latitude: 25.033, longitude: 121.5654 },
+  { label: "Tokyo, Japan", timezone: "Asia/Tokyo", latitude: 35.6762, longitude: 139.6503 },
+  { label: "Seoul, South Korea", timezone: "Asia/Seoul", latitude: 37.5665, longitude: 126.978 },
+  { label: "Pyongyang, North Korea", timezone: "Asia/Pyongyang", latitude: 39.0392, longitude: 125.7625 },
+  { label: "Ulaanbaatar, Mongolia", timezone: "Asia/Ulaanbaatar", latitude: 47.8864, longitude: 106.9057 },
+  { label: "Canberra, Australia", timezone: "Australia/Sydney", latitude: -35.2809, longitude: 149.13 },
+  { label: "Wellington, New Zealand", timezone: "Pacific/Auckland", latitude: -41.2865, longitude: 174.7762 },
+  { label: "Suva, Fiji", timezone: "Pacific/Fiji", latitude: -18.1248, longitude: 178.4501 },
+  { label: "London, United Kingdom", timezone: "Europe/London", latitude: 51.5072, longitude: -0.1276 },
+  { label: "Dublin, Ireland", timezone: "Europe/Dublin", latitude: 53.3498, longitude: -6.2603 },
+  { label: "Paris, France", timezone: "Europe/Paris", latitude: 48.8566, longitude: 2.3522 },
+  { label: "Madrid, Spain", timezone: "Europe/Madrid", latitude: 40.4168, longitude: -3.7038 },
+  { label: "Lisbon, Portugal", timezone: "Europe/Lisbon", latitude: 38.7223, longitude: -9.1393 },
+  { label: "Rome, Italy", timezone: "Europe/Rome", latitude: 41.9028, longitude: 12.4964 },
+  { label: "Berlin, Germany", timezone: "Europe/Berlin", latitude: 52.52, longitude: 13.405 },
+  { label: "Amsterdam, Netherlands", timezone: "Europe/Amsterdam", latitude: 52.3676, longitude: 4.9041 },
+  { label: "Brussels, Belgium", timezone: "Europe/Brussels", latitude: 50.8503, longitude: 4.3517 },
+  { label: "Bern, Switzerland", timezone: "Europe/Zurich", latitude: 46.948, longitude: 7.4474 },
+  { label: "Vienna, Austria", timezone: "Europe/Vienna", latitude: 48.2082, longitude: 16.3738 },
+  { label: "Prague, Czechia", timezone: "Europe/Prague", latitude: 50.0755, longitude: 14.4378 },
+  { label: "Warsaw, Poland", timezone: "Europe/Warsaw", latitude: 52.2297, longitude: 21.0122 },
+  { label: "Budapest, Hungary", timezone: "Europe/Budapest", latitude: 47.4979, longitude: 19.0402 },
+  { label: "Bratislava, Slovakia", timezone: "Europe/Bratislava", latitude: 48.1486, longitude: 17.1077 },
+  { label: "Ljubljana, Slovenia", timezone: "Europe/Ljubljana", latitude: 46.0569, longitude: 14.5058 },
+  { label: "Zagreb, Croatia", timezone: "Europe/Zagreb", latitude: 45.815, longitude: 15.9819 },
+  { label: "Belgrade, Serbia", timezone: "Europe/Belgrade", latitude: 44.7866, longitude: 20.4489 },
+  { label: "Sarajevo, Bosnia and Herzegovina", timezone: "Europe/Sarajevo", latitude: 43.8563, longitude: 18.4131 },
+  { label: "Podgorica, Montenegro", timezone: "Europe/Podgorica", latitude: 42.4304, longitude: 19.2594 },
+  { label: "Tirana, Albania", timezone: "Europe/Tirane", latitude: 41.3275, longitude: 19.8187 },
+  { label: "Skopje, North Macedonia", timezone: "Europe/Skopje", latitude: 41.9981, longitude: 21.4254 },
+  { label: "Athens, Greece", timezone: "Europe/Athens", latitude: 37.9838, longitude: 23.7275 },
+  { label: "Sofia, Bulgaria", timezone: "Europe/Sofia", latitude: 42.6977, longitude: 23.3219 },
+  { label: "Bucharest, Romania", timezone: "Europe/Bucharest", latitude: 44.4268, longitude: 26.1025 },
+  { label: "Chisinau, Moldova", timezone: "Europe/Chisinau", latitude: 47.0105, longitude: 28.8638 },
+  { label: "Kyiv, Ukraine", timezone: "Europe/Kyiv", latitude: 50.4501, longitude: 30.5234 },
+  { label: "Minsk, Belarus", timezone: "Europe/Minsk", latitude: 53.9006, longitude: 27.559 },
+  { label: "Vilnius, Lithuania", timezone: "Europe/Vilnius", latitude: 54.6872, longitude: 25.2797 },
+  { label: "Riga, Latvia", timezone: "Europe/Riga", latitude: 56.9496, longitude: 24.1052 },
+  { label: "Tallinn, Estonia", timezone: "Europe/Tallinn", latitude: 59.437, longitude: 24.7536 },
+  { label: "Helsinki, Finland", timezone: "Europe/Helsinki", latitude: 60.1699, longitude: 24.9384 },
+  { label: "Stockholm, Sweden", timezone: "Europe/Stockholm", latitude: 59.3293, longitude: 18.0686 },
+  { label: "Oslo, Norway", timezone: "Europe/Oslo", latitude: 59.9139, longitude: 10.7522 },
+  { label: "Copenhagen, Denmark", timezone: "Europe/Copenhagen", latitude: 55.6761, longitude: 12.5683 },
+  { label: "Reykjavik, Iceland", timezone: "Atlantic/Reykjavik", latitude: 64.1466, longitude: -21.9426 },
+  { label: "Moscow, Russia", timezone: "Europe/Moscow", latitude: 55.7558, longitude: 37.6173 },
+  { label: "Ottawa, Canada", timezone: "America/Toronto", latitude: 45.4215, longitude: -75.6972 },
+  { label: "Washington, DC, USA", timezone: "America/New_York", latitude: 38.9072, longitude: -77.0369 },
+  { label: "Mexico City, Mexico", timezone: "America/Mexico_City", latitude: 19.4326, longitude: -99.1332 },
+  { label: "Guatemala City, Guatemala", timezone: "America/Guatemala", latitude: 14.6349, longitude: -90.5069 },
+  { label: "San Salvador, El Salvador", timezone: "America/El_Salvador", latitude: 13.6929, longitude: -89.2182 },
+  { label: "Tegucigalpa, Honduras", timezone: "America/Tegucigalpa", latitude: 14.0723, longitude: -87.1921 },
+  { label: "Managua, Nicaragua", timezone: "America/Managua", latitude: 12.114, longitude: -86.2362 },
+  { label: "San Jose, Costa Rica", timezone: "America/Costa_Rica", latitude: 9.9281, longitude: -84.0907 },
+  { label: "Panama City, Panama", timezone: "America/Panama", latitude: 8.9824, longitude: -79.5199 },
+  { label: "Havana, Cuba", timezone: "America/Havana", latitude: 23.1136, longitude: -82.3666 },
+  { label: "Kingston, Jamaica", timezone: "America/Jamaica", latitude: 18.0179, longitude: -76.8099 },
+  { label: "Santo Domingo, Dominican Republic", timezone: "America/Santo_Domingo", latitude: 18.4861, longitude: -69.9312 },
+  { label: "Bogota, Colombia", timezone: "America/Bogota", latitude: 4.711, longitude: -74.0721 },
+  { label: "Caracas, Venezuela", timezone: "America/Caracas", latitude: 10.4806, longitude: -66.9036 },
+  { label: "Quito, Ecuador", timezone: "America/Guayaquil", latitude: -0.1807, longitude: -78.4678 },
+  { label: "Lima, Peru", timezone: "America/Lima", latitude: -12.0464, longitude: -77.0428 },
+  { label: "La Paz, Bolivia", timezone: "America/La_Paz", latitude: -16.4897, longitude: -68.1193 },
+  { label: "Santiago, Chile", timezone: "America/Santiago", latitude: -33.4489, longitude: -70.6693 },
+  { label: "Buenos Aires, Argentina", timezone: "America/Argentina/Buenos_Aires", latitude: -34.6037, longitude: -58.3816 },
+  { label: "Montevideo, Uruguay", timezone: "America/Montevideo", latitude: -34.9011, longitude: -56.1645 },
+  { label: "Asuncion, Paraguay", timezone: "America/Asuncion", latitude: -25.2637, longitude: -57.5759 },
+  { label: "Brasilia, Brazil", timezone: "America/Sao_Paulo", latitude: -15.8267, longitude: -47.9218 },
+  { label: "Georgetown, Guyana", timezone: "America/Guyana", latitude: 6.8013, longitude: -58.1551 },
+  { label: "Paramaribo, Suriname", timezone: "America/Paramaribo", latitude: 5.852, longitude: -55.2038 },
+  { label: "Cayenne, French Guiana", timezone: "America/Cayenne", latitude: 4.9224, longitude: -52.3135 },
+  { label: "Cape Town, South Africa", timezone: "Africa/Johannesburg", latitude: -33.9249, longitude: 18.4241 },
+  { label: "Pretoria, South Africa", timezone: "Africa/Johannesburg", latitude: -25.7479, longitude: 28.2293 },
+  { label: "Nairobi, Kenya", timezone: "Africa/Nairobi", latitude: -1.2921, longitude: 36.8219 },
+  { label: "Addis Ababa, Ethiopia", timezone: "Africa/Addis_Ababa", latitude: 8.9806, longitude: 38.7578 },
+  { label: "Mogadishu, Somalia", timezone: "Africa/Mogadishu", latitude: 2.0469, longitude: 45.3182 },
+  { label: "Djibouti, Djibouti", timezone: "Africa/Djibouti", latitude: 11.5721, longitude: 43.1456 },
+  { label: "Asmara, Eritrea", timezone: "Africa/Asmara", latitude: 15.3229, longitude: 38.9251 },
+  { label: "Kampala, Uganda", timezone: "Africa/Kampala", latitude: 0.3476, longitude: 32.5825 },
+  { label: "Kigali, Rwanda", timezone: "Africa/Kigali", latitude: -1.9441, longitude: 30.0619 },
+  { label: "Bujumbura, Burundi", timezone: "Africa/Bujumbura", latitude: -3.3614, longitude: 29.3599 },
+  { label: "Dodoma, Tanzania", timezone: "Africa/Dar_es_Salaam", latitude: -6.163, longitude: 35.7516 },
+  { label: "Lusaka, Zambia", timezone: "Africa/Lusaka", latitude: -15.3875, longitude: 28.3228 },
+  { label: "Harare, Zimbabwe", timezone: "Africa/Harare", latitude: -17.8252, longitude: 31.0335 },
+  { label: "Maputo, Mozambique", timezone: "Africa/Maputo", latitude: -25.9692, longitude: 32.5732 },
+  { label: "Gaborone, Botswana", timezone: "Africa/Gaborone", latitude: -24.6282, longitude: 25.9231 },
+  { label: "Windhoek, Namibia", timezone: "Africa/Windhoek", latitude: -22.5609, longitude: 17.0658 },
+  { label: "Luanda, Angola", timezone: "Africa/Luanda", latitude: -8.839, longitude: 13.2894 },
+  { label: "Kinshasa, DR Congo", timezone: "Africa/Kinshasa", latitude: -4.4419, longitude: 15.2663 },
+  { label: "Brazzaville, Congo", timezone: "Africa/Brazzaville", latitude: -4.2634, longitude: 15.2429 },
+  { label: "Libreville, Gabon", timezone: "Africa/Libreville", latitude: 0.4162, longitude: 9.4673 },
+  { label: "Yaounde, Cameroon", timezone: "Africa/Douala", latitude: 3.848, longitude: 11.5021 },
+  { label: "Abuja, Nigeria", timezone: "Africa/Lagos", latitude: 9.0765, longitude: 7.3986 },
+  { label: "Accra, Ghana", timezone: "Africa/Accra", latitude: 5.6037, longitude: -0.187 },
+  { label: "Abidjan, Cote d'Ivoire", timezone: "Africa/Abidjan", latitude: 5.36, longitude: -4.0083 },
+  { label: "Dakar, Senegal", timezone: "Africa/Dakar", latitude: 14.7167, longitude: -17.4677 },
+  { label: "Bamako, Mali", timezone: "Africa/Bamako", latitude: 12.6392, longitude: -8.0029 },
+  { label: "Ouagadougou, Burkina Faso", timezone: "Africa/Ouagadougou", latitude: 12.3714, longitude: -1.5197 },
+  { label: "Niamey, Niger", timezone: "Africa/Niamey", latitude: 13.5116, longitude: 2.1254 },
+  { label: "N'Djamena, Chad", timezone: "Africa/Ndjamena", latitude: 12.1348, longitude: 15.0557 }
 ];
 
 var WEATHER_LOCATION_OPTIONS = [
-  { label: "Phone GPS", mode: "gps" },
-  { label: "Riyadh, Saudi Arabia", mode: "fixed", latitude: 24.7136, longitude: 46.6753 },
-  { label: "Jeddah, Saudi Arabia", mode: "fixed", latitude: 21.5433, longitude: 39.1728 },
-  { label: "Makkah, Saudi Arabia", mode: "fixed", latitude: 21.3891, longitude: 39.8579 },
-  { label: "Madinah, Saudi Arabia", mode: "fixed", latitude: 24.5247, longitude: 39.5692 },
-  { label: "Dammam, Saudi Arabia", mode: "fixed", latitude: 26.4207, longitude: 50.0888 },
-  { label: "Khobar, Saudi Arabia", mode: "fixed", latitude: 26.2794, longitude: 50.2083 },
-  { label: "Dhahran, Saudi Arabia", mode: "fixed", latitude: 26.2361, longitude: 50.0393 },
-  { label: "Taif, Saudi Arabia", mode: "fixed", latitude: 21.2703, longitude: 40.4158 },
-  { label: "Tabuk, Saudi Arabia", mode: "fixed", latitude: 28.3838, longitude: 36.555 },
-  { label: "Abha, Saudi Arabia", mode: "fixed", latitude: 18.2164, longitude: 42.5053 },
-  { label: "Khamis Mushait, Saudi Arabia", mode: "fixed", latitude: 18.3, longitude: 42.7333 },
-  { label: "Jazan, Saudi Arabia", mode: "fixed", latitude: 16.8892, longitude: 42.5511 },
-  { label: "Najran, Saudi Arabia", mode: "fixed", latitude: 17.565, longitude: 44.2289 },
-  { label: "Hail, Saudi Arabia", mode: "fixed", latitude: 27.5114, longitude: 41.7208 },
-  { label: "Buraidah, Saudi Arabia", mode: "fixed", latitude: 26.3592, longitude: 43.9818 },
-  { label: "Al Ahsa, Saudi Arabia", mode: "fixed", latitude: 25.3833, longitude: 49.5833 },
-  { label: "Yanbu, Saudi Arabia", mode: "fixed", latitude: 24.0895, longitude: 38.0618 },
-  { label: "Al Jubail, Saudi Arabia", mode: "fixed", latitude: 27.0174, longitude: 49.6225 },
-  { label: "Dubai, UAE", mode: "fixed", latitude: 25.2048, longitude: 55.2708 },
-  { label: "Abu Dhabi, UAE", mode: "fixed", latitude: 24.4539, longitude: 54.3773 },
-  { label: "Sharjah, UAE", mode: "fixed", latitude: 25.3463, longitude: 55.4209 },
-  { label: "Ajman, UAE", mode: "fixed", latitude: 25.4052, longitude: 55.5136 },
-  { label: "Al Ain, UAE", mode: "fixed", latitude: 24.1302, longitude: 55.8023 },
-  { label: "Doha, Qatar", mode: "fixed", latitude: 25.2854, longitude: 51.531 },
-  { label: "Lusail, Qatar", mode: "fixed", latitude: 25.4209, longitude: 51.531 },
-  { label: "Kuwait City, Kuwait", mode: "fixed", latitude: 29.3759, longitude: 47.9774 },
-  { label: "Manama, Bahrain", mode: "fixed", latitude: 26.2235, longitude: 50.5876 },
-  { label: "Muscat, Oman", mode: "fixed", latitude: 23.588, longitude: 58.3829 },
-  { label: "Salalah, Oman", mode: "fixed", latitude: 17.0194, longitude: 54.0897 },
-  { label: "Cairo, Egypt", mode: "fixed", latitude: 30.0444, longitude: 31.2357 },
-  { label: "Alexandria, Egypt", mode: "fixed", latitude: 31.2001, longitude: 29.9187 },
-  { label: "Giza, Egypt", mode: "fixed", latitude: 30.0131, longitude: 31.2089 },
-  { label: "Istanbul, Turkiye", mode: "fixed", latitude: 41.0082, longitude: 28.9784 },
-  { label: "Ankara, Turkiye", mode: "fixed", latitude: 39.9334, longitude: 32.8597 },
-  { label: "Izmir, Turkiye", mode: "fixed", latitude: 38.4237, longitude: 27.1428 },
-  { label: "Antalya, Turkiye", mode: "fixed", latitude: 36.8969, longitude: 30.7133 },
-  { label: "Amman, Jordan", mode: "fixed", latitude: 31.9539, longitude: 35.9106 },
-  { label: "Aqaba, Jordan", mode: "fixed", latitude: 29.5321, longitude: 35.0063 },
-  { label: "Beirut, Lebanon", mode: "fixed", latitude: 33.8938, longitude: 35.5018 },
-  { label: "Baghdad, Iraq", mode: "fixed", latitude: 33.3152, longitude: 44.3661 },
-  { label: "Basra, Iraq", mode: "fixed", latitude: 30.5085, longitude: 47.7804 },
-  { label: "Erbil, Iraq", mode: "fixed", latitude: 36.1911, longitude: 44.0092 },
-  { label: "Casablanca, Morocco", mode: "fixed", latitude: 33.5731, longitude: -7.5898 },
-  { label: "Rabat, Morocco", mode: "fixed", latitude: 34.0209, longitude: -6.8416 },
-  { label: "Marrakesh, Morocco", mode: "fixed", latitude: 31.6295, longitude: -7.9811 },
-  { label: "Tunis, Tunisia", mode: "fixed", latitude: 36.8065, longitude: 10.1815 },
-  { label: "Algiers, Algeria", mode: "fixed", latitude: 36.7538, longitude: 3.0588 },
-  { label: "Tripoli, Libya", mode: "fixed", latitude: 32.8872, longitude: 13.1913 },
-  { label: "Khartoum, Sudan", mode: "fixed", latitude: 15.5007, longitude: 32.5599 },
-  { label: "London, United Kingdom", mode: "fixed", latitude: 51.5072, longitude: -0.1276 },
-  { label: "Manchester, United Kingdom", mode: "fixed", latitude: 53.4808, longitude: -2.2426 },
-  { label: "Birmingham, United Kingdom", mode: "fixed", latitude: 52.4862, longitude: -1.8904 },
-  { label: "Edinburgh, United Kingdom", mode: "fixed", latitude: 55.9533, longitude: -3.1883 },
-  { label: "Paris, France", mode: "fixed", latitude: 48.8566, longitude: 2.3522 },
-  { label: "Marseille, France", mode: "fixed", latitude: 43.2965, longitude: 5.3698 },
-  { label: "Lyon, France", mode: "fixed", latitude: 45.764, longitude: 4.8357 },
-  { label: "Berlin, Germany", mode: "fixed", latitude: 52.52, longitude: 13.405 },
-  { label: "Munich, Germany", mode: "fixed", latitude: 48.1351, longitude: 11.582 },
-  { label: "Hamburg, Germany", mode: "fixed", latitude: 53.5511, longitude: 9.9937 },
-  { label: "Frankfurt, Germany", mode: "fixed", latitude: 50.1109, longitude: 8.6821 },
-  { label: "Rome, Italy", mode: "fixed", latitude: 41.9028, longitude: 12.4964 },
-  { label: "Milan, Italy", mode: "fixed", latitude: 45.4642, longitude: 9.19 },
-  { label: "Naples, Italy", mode: "fixed", latitude: 40.8518, longitude: 14.2681 },
-  { label: "Madrid, Spain", mode: "fixed", latitude: 40.4168, longitude: -3.7038 },
-  { label: "Barcelona, Spain", mode: "fixed", latitude: 41.3851, longitude: 2.1734 },
-  { label: "Lisbon, Portugal", mode: "fixed", latitude: 38.7223, longitude: -9.1393 },
-  { label: "Amsterdam, Netherlands", mode: "fixed", latitude: 52.3676, longitude: 4.9041 },
-  { label: "Brussels, Belgium", mode: "fixed", latitude: 50.8503, longitude: 4.3517 },
-  { label: "Zurich, Switzerland", mode: "fixed", latitude: 47.3769, longitude: 8.5417 },
-  { label: "Vienna, Austria", mode: "fixed", latitude: 48.2082, longitude: 16.3738 },
-  { label: "Prague, Czechia", mode: "fixed", latitude: 50.0755, longitude: 14.4378 },
-  { label: "Warsaw, Poland", mode: "fixed", latitude: 52.2297, longitude: 21.0122 },
-  { label: "Athens, Greece", mode: "fixed", latitude: 37.9838, longitude: 23.7275 },
-  { label: "Stockholm, Sweden", mode: "fixed", latitude: 59.3293, longitude: 18.0686 },
-  { label: "Oslo, Norway", mode: "fixed", latitude: 59.9139, longitude: 10.7522 },
-  { label: "Copenhagen, Denmark", mode: "fixed", latitude: 55.6761, longitude: 12.5683 },
-  { label: "Helsinki, Finland", mode: "fixed", latitude: 60.1699, longitude: 24.9384 },
-  { label: "Dublin, Ireland", mode: "fixed", latitude: 53.3498, longitude: -6.2603 },
-  { label: "Moscow, Russia", mode: "fixed", latitude: 55.7558, longitude: 37.6173 },
-  { label: "Saint Petersburg, Russia", mode: "fixed", latitude: 59.9311, longitude: 30.3609 },
-  { label: "Kyiv, Ukraine", mode: "fixed", latitude: 50.4501, longitude: 30.5234 },
-  { label: "Delhi, India", mode: "fixed", latitude: 28.6139, longitude: 77.209 },
-  { label: "Mumbai, India", mode: "fixed", latitude: 19.076, longitude: 72.8777 },
-  { label: "Bengaluru, India", mode: "fixed", latitude: 12.9716, longitude: 77.5946 },
-  { label: "Hyderabad, India", mode: "fixed", latitude: 17.385, longitude: 78.4867 },
-  { label: "Chennai, India", mode: "fixed", latitude: 13.0827, longitude: 80.2707 },
-  { label: "Kolkata, India", mode: "fixed", latitude: 22.5726, longitude: 88.3639 },
-  { label: "Karachi, Pakistan", mode: "fixed", latitude: 24.8607, longitude: 67.0011 },
-  { label: "Lahore, Pakistan", mode: "fixed", latitude: 31.5204, longitude: 74.3587 },
-  { label: "Islamabad, Pakistan", mode: "fixed", latitude: 33.6844, longitude: 73.0479 },
-  { label: "Dhaka, Bangladesh", mode: "fixed", latitude: 23.8103, longitude: 90.4125 },
-  { label: "Kathmandu, Nepal", mode: "fixed", latitude: 27.7172, longitude: 85.324 },
-  { label: "Colombo, Sri Lanka", mode: "fixed", latitude: 6.9271, longitude: 79.8612 },
-  { label: "Bangkok, Thailand", mode: "fixed", latitude: 13.7563, longitude: 100.5018 },
-  { label: "Singapore, Singapore", mode: "fixed", latitude: 1.3521, longitude: 103.8198 },
-  { label: "Kuala Lumpur, Malaysia", mode: "fixed", latitude: 3.139, longitude: 101.6869 },
-  { label: "Jakarta, Indonesia", mode: "fixed", latitude: -6.2088, longitude: 106.8456 },
-  { label: "Bali, Indonesia", mode: "fixed", latitude: -8.4095, longitude: 115.1889 },
-  { label: "Manila, Philippines", mode: "fixed", latitude: 14.5995, longitude: 120.9842 },
-  { label: "Ho Chi Minh City, Vietnam", mode: "fixed", latitude: 10.8231, longitude: 106.6297 },
-  { label: "Hanoi, Vietnam", mode: "fixed", latitude: 21.0278, longitude: 105.8342 },
-  { label: "Beijing, China", mode: "fixed", latitude: 39.9042, longitude: 116.4074 },
-  { label: "Shanghai, China", mode: "fixed", latitude: 31.2304, longitude: 121.4737 },
-  { label: "Guangzhou, China", mode: "fixed", latitude: 23.1291, longitude: 113.2644 },
-  { label: "Shenzhen, China", mode: "fixed", latitude: 22.5431, longitude: 114.0579 },
-  { label: "Hong Kong, China", mode: "fixed", latitude: 22.3193, longitude: 114.1694 },
-  { label: "Seoul, South Korea", mode: "fixed", latitude: 37.5665, longitude: 126.978 },
-  { label: "Tokyo, Japan", mode: "fixed", latitude: 35.6762, longitude: 139.6503 },
-  { label: "Osaka, Japan", mode: "fixed", latitude: 34.6937, longitude: 135.5023 },
-  { label: "Kyoto, Japan", mode: "fixed", latitude: 35.0116, longitude: 135.7681 },
-  { label: "Sydney, Australia", mode: "fixed", latitude: -33.8688, longitude: 151.2093 },
-  { label: "Melbourne, Australia", mode: "fixed", latitude: -37.8136, longitude: 144.9631 },
-  { label: "Brisbane, Australia", mode: "fixed", latitude: -27.4698, longitude: 153.0251 },
-  { label: "Perth, Australia", mode: "fixed", latitude: -31.9505, longitude: 115.8605 },
-  { label: "Auckland, New Zealand", mode: "fixed", latitude: -36.8509, longitude: 174.7645 },
-  { label: "New York, USA", mode: "fixed", latitude: 40.7128, longitude: -74.006 },
-  { label: "Chicago, USA", mode: "fixed", latitude: 41.8781, longitude: -87.6298 },
-  { label: "Denver, USA", mode: "fixed", latitude: 39.7392, longitude: -104.9903 },
-  { label: "Los Angeles, USA", mode: "fixed", latitude: 34.0522, longitude: -118.2437 },
-  { label: "Washington, DC, USA", mode: "fixed", latitude: 38.9072, longitude: -77.0369 },
-  { label: "Boston, USA", mode: "fixed", latitude: 42.3601, longitude: -71.0589 },
-  { label: "Miami, USA", mode: "fixed", latitude: 25.7617, longitude: -80.1918 },
-  { label: "Atlanta, USA", mode: "fixed", latitude: 33.749, longitude: -84.388 },
-  { label: "Dallas, USA", mode: "fixed", latitude: 32.7767, longitude: -96.797 },
-  { label: "Houston, USA", mode: "fixed", latitude: 29.7604, longitude: -95.3698 },
-  { label: "Seattle, USA", mode: "fixed", latitude: 47.6062, longitude: -122.3321 },
-  { label: "San Francisco, USA", mode: "fixed", latitude: 37.7749, longitude: -122.4194 },
-  { label: "Las Vegas, USA", mode: "fixed", latitude: 36.1699, longitude: -115.1398 },
-  { label: "Phoenix, USA", mode: "fixed", latitude: 33.4484, longitude: -112.074 },
-  { label: "Toronto, Canada", mode: "fixed", latitude: 43.6532, longitude: -79.3832 },
-  { label: "Montreal, Canada", mode: "fixed", latitude: 45.5017, longitude: -73.5673 },
-  { label: "Vancouver, Canada", mode: "fixed", latitude: 49.2827, longitude: -123.1207 },
-  { label: "Calgary, Canada", mode: "fixed", latitude: 51.0447, longitude: -114.0719 },
-  { label: "Sao Paulo, Brazil", mode: "fixed", latitude: -23.5505, longitude: -46.6333 },
-  { label: "Mexico City, Mexico", mode: "fixed", latitude: 19.4326, longitude: -99.1332 },
-  { label: "Rio de Janeiro, Brazil", mode: "fixed", latitude: -22.9068, longitude: -43.1729 },
-  { label: "Buenos Aires, Argentina", mode: "fixed", latitude: -34.6037, longitude: -58.3816 },
-  { label: "Santiago, Chile", mode: "fixed", latitude: -33.4489, longitude: -70.6693 },
-  { label: "Lima, Peru", mode: "fixed", latitude: -12.0464, longitude: -77.0428 },
-  { label: "Bogota, Colombia", mode: "fixed", latitude: 4.711, longitude: -74.0721 },
-  { label: "Johannesburg, South Africa", mode: "fixed", latitude: -26.2041, longitude: 28.0473 },
-  { label: "Cape Town, South Africa", mode: "fixed", latitude: -33.9249, longitude: 18.4241 },
-  { label: "Nairobi, Kenya", mode: "fixed", latitude: -1.2921, longitude: 36.8219 },
-  { label: "Lagos, Nigeria", mode: "fixed", latitude: 6.5244, longitude: 3.3792 },
-  { label: "Addis Ababa, Ethiopia", mode: "fixed", latitude: 8.9806, longitude: 38.7578 }
-];
+  { label: "Phone GPS", mode: "gps" }
+].concat(CAPITAL_TIME_OPTIONS.map(function (item) {
+  return {
+    label: item.label,
+    mode: "fixed",
+    latitude: item.latitude,
+    longitude: item.longitude,
+    timezone: item.timezone
+  };
+}));
+
+function getTimezoneOffsetMinutes(timezone) {
+  if (!timezone || timezone === "UTC") {
+    return 0;
+  }
+
+  try {
+    var now = new Date();
+    var parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      hour12: false,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    }).formatToParts(now);
+    var values = {};
+
+    parts.forEach(function (part) {
+      values[part.type] = part.value;
+    });
+
+    var hour = parseInt(values.hour, 10);
+    if (hour === 24) {
+      hour = 0;
+    }
+
+    var zonedAsUtc = Date.UTC(
+      parseInt(values.year, 10),
+      parseInt(values.month, 10) - 1,
+      parseInt(values.day, 10),
+      hour,
+      parseInt(values.minute, 10)
+    );
+
+    return Math.round((zonedAsUtc - now.getTime()) / 60000);
+  } catch (e) {
+    return 0;
+  }
+}
 
 function formatOffset(minutes) {
   var sign = minutes >= 0 ? "+" : "-";
@@ -191,15 +216,25 @@ function formatOffset(minutes) {
   return "UTC" + sign + String(hours) + ":" + String(mins < 10 ? "0" + mins : mins);
 }
 
+function normalizeTimeZone(zone) {
+  return {
+    label: zone.label || "UTC",
+    timezone: zone.timezone || "UTC",
+    latitude: zone.latitude || 0,
+    longitude: zone.longitude || 0,
+    offset: typeof zone.offset === "number" ? zone.offset : getTimezoneOffsetMinutes(zone.timezone || "UTC")
+  };
+}
+
 function getSavedSecondZone() {
   try {
     var raw = localStorage.getItem("second_zone");
     if (raw) {
-      return JSON.parse(raw);
+      return normalizeTimeZone(JSON.parse(raw));
     }
   } catch (e) {}
 
-  return SECOND_ZONE_OPTIONS[0];
+  return normalizeTimeZone(CAPITAL_TIME_OPTIONS[0]);
 }
 
 function getSavedWeatherLocation() {
@@ -218,9 +253,11 @@ function sendWeather(payload) {
 }
 
 function sendSecondZone(zone) {
+  var normalized = normalizeTimeZone(zone);
+
   Pebble.sendAppMessage({
-    SECOND_ZONE_OFFSET: zone.offset,
-    SECOND_ZONE_LABEL: zone.label
+    SECOND_ZONE_OFFSET: normalized.offset,
+    SECOND_ZONE_LABEL: normalized.label
   }, function () {}, function () {});
 }
 
@@ -246,12 +283,11 @@ function fetchWeatherForCoordinates(latitude, longitude, cityLabel) {
       var current = data.current || {};
       var temp = current.temperature_2m;
       var weatherCode = current.weather_code;
-      var city = cityLabel || data.timezone_abbreviation || "Local";
 
       sendWeather({
         WEATHER_TEMP: typeof temp === "number" ? Math.round(temp) + "C" : "--",
         WEATHER_COND: codeToLabel(weatherCode),
-        WEATHER_CITY: city,
+        WEATHER_CITY: cityLabel || data.timezone_abbreviation || "Local",
         WEATHER_ERROR: ""
       });
     })
@@ -283,39 +319,53 @@ function fetchWeather() {
   });
 }
 
+function buildSettingsHtml() {
+  var selectedTime = getSavedSecondZone();
+  var selectedWeather = getSavedWeatherLocation();
+  var timeOptionsJson = JSON.stringify(CAPITAL_TIME_OPTIONS).replace(/</g, "\\u003c");
+  var weatherOptionsJson = JSON.stringify(WEATHER_LOCATION_OPTIONS).replace(/</g, "\\u003c");
+
+  return '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<style>body{font-family:Arial,sans-serif;background:#0b1020;color:#fff;padding:20px}h1{font-size:22px;margin:0 0 8px}h2{font-size:18px;margin:24px 0 8px}label{display:block;margin:16px 0 8px}input,select,button{width:100%;padding:14px;border-radius:10px;border:none;font-size:16px;box-sizing:border-box}select,input{background:#fff;color:#111}button{margin-top:22px;background:#2f7cf6;color:#fff;font-weight:bold}p{color:#b6c2e1;line-height:1.5;margin:0 0 12px}.hint{font-size:13px;color:#8fa1cf;margin-top:8px}.row{display:grid;grid-template-columns:1fr;gap:8px}</style>' +
+    '</head><body><h1>Watchface Settings</h1><p>Search manually by city name for both the second clock and weather. Built-in lists include world capitals.</p>' +
+    '<h2>Second Clock</h2><label for="time-search">Search city or capital</label><input id="time-search" type="text" placeholder="Search time city" value="' + escapeHtml(selectedTime.label) + '">' +
+    '<label for="time-location">Time city</label><select id="time-location"></select><div class="hint">The watch stores the selected city name and current UTC offset.</div>' +
+    '<h2>Weather</h2><label for="weather-search">Search country or city</label><input id="weather-search" type="text" placeholder="Search weather location" value="' + escapeHtml(selectedWeather.label || "Phone GPS") + '">' +
+    '<label for="weather-location">Weather location</label><select id="weather-location"></select><div class="hint">Choose Phone GPS to always use your current location.</div>' +
+    '<button id="save">Save</button>' +
+    '<script>var TIME_OPTIONS=' + timeOptionsJson + ';var WEATHER_OPTIONS=' + weatherOptionsJson + ';var selectedTimeLabel=' + JSON.stringify(selectedTime.label) + ';var selectedWeatherLabel=' + JSON.stringify(selectedWeather.label || "Phone GPS") + ';' +
+    clientSettingsScript() +
+    '</script></body></html>';
+}
+
+function escapeHtml(text) {
+  return String(text).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function clientSettingsScript() {
+  return 'function optionKey(item){return item.label+"|"+(item.timezone||"")+"|"+(item.latitude||"")+"|"+(item.longitude||"");}' +
+    'function renderSelect(select,items,selectedLabel,kind){if(!items.length){items=[{label:"No results",mode:"none"}];}select.innerHTML=items.map(function(item){var disabled=item.mode==="none"?" disabled":"";var selected=item.label===selectedLabel?" selected":"";var value;if(item.mode==="none"){value="No results|none|||";}else if(kind==="weather"&&item.mode==="gps"){value=item.label+"|gps|||";}else{value=item.label+"|fixed|"+(item.latitude||0)+"|"+(item.longitude||0)+"|"+(item.timezone||"UTC");}var suffix=item.timezone?" ("+item.timezone+")":"";return "<option value=\\""+value.replace(/"/g,"&quot;")+"\\""+selected+disabled+">"+item.label+suffix+"</option>";}).join("");}' +
+    'function localSearch(options,q){return options.filter(function(item){return item.label.toLowerCase().indexOf(q)!==-1||(item.timezone&&item.timezone.toLowerCase().indexOf(q)!==-1);}).slice(0,70);}' +
+    'function mergeResults(a,b){var seen={};var out=[];a.concat(b).forEach(function(item){var key=optionKey(item);if(!seen[key]){seen[key]=true;out.push(item);}});return out.slice(0,90);}' +
+    'function fetchRemoteSearch(q){var url="https://geocoding-api.open-meteo.com/v1/search?name="+encodeURIComponent(q)+"&count=25&language=en&format=json";return fetch(url).then(function(r){return r.json();}).then(function(data){return ((data&&data.results)||[]).map(function(item){var parts=[item.name];if(item.admin1&&item.admin1!==item.name)parts.push(item.admin1);if(item.country)parts.push(item.country);return {label:parts.join(", "),mode:"fixed",latitude:item.latitude,longitude:item.longitude,timezone:item.timezone||"UTC"};});}).catch(function(){return [];});}' +
+    'function wireSearch(input,select,options,selectedLabel,kind){var timer=null;function run(){var q=input.value.trim().toLowerCase();if(!q){renderSelect(select,options.slice(0,80),selectedLabel,kind);return;}var local=localSearch(options,q);renderSelect(select,local,selectedLabel,kind);if(q.length<3)return;fetchRemoteSearch(q).then(function(remote){renderSelect(select,mergeResults(local,remote),selectedLabel,kind);});}input.addEventListener("input",function(){clearTimeout(timer);timer=setTimeout(run,250);});run();}' +
+    'function tzOffset(tz){if(!tz||tz==="UTC")return 0;try{var now=new Date();var parts=new Intl.DateTimeFormat("en-US",{timeZone:tz,hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).formatToParts(now);var v={};parts.forEach(function(p){v[p.type]=p.value;});var h=parseInt(v.hour,10);if(h===24)h=0;var asUtc=Date.UTC(parseInt(v.year,10),parseInt(v.month,10)-1,parseInt(v.day,10),h,parseInt(v.minute,10));return Math.round((asUtc-now.getTime())/60000);}catch(e){return 0;}}' +
+    'var timeInput=document.getElementById("time-search");var timeSelect=document.getElementById("time-location");var weatherInput=document.getElementById("weather-search");var weatherSelect=document.getElementById("weather-location");wireSearch(timeInput,timeSelect,TIME_OPTIONS,selectedTimeLabel,"time");wireSearch(weatherInput,weatherSelect,WEATHER_OPTIONS,selectedWeatherLabel,"weather");' +
+    'document.getElementById("save").addEventListener("click",function(){var t=timeSelect.value.split("|");var w=weatherSelect.value.split("|");if(!t[1]||t[1]==="none"||!w[1]||w[1]==="none")return;var tz=t[4]||"UTC";var data={SECOND_ZONE_LABEL:t[0],SECOND_ZONE_OFFSET:tzOffset(tz),SECOND_ZONE_TIMEZONE:tz,SECOND_ZONE_LAT:t[2]?parseFloat(t[2]):0,SECOND_ZONE_LON:t[3]?parseFloat(t[3]):0,WEATHER_LOCATION_LABEL:w[0],WEATHER_LOCATION_MODE:w[1],WEATHER_LOCATION_LAT:w[2]?parseFloat(w[2]):0,WEATHER_LOCATION_LON:w[3]?parseFloat(w[3]):0,WEATHER_LOCATION_TIMEZONE:w[4]||"UTC"};document.location="pebblejs://close#"+encodeURIComponent(JSON.stringify(data));});';
+}
+
 Pebble.addEventListener("ready", function () {
   sendSecondZone(getSavedSecondZone());
   fetchWeather();
 });
 
 Pebble.addEventListener("appmessage", function () {
+  sendSecondZone(getSavedSecondZone());
   fetchWeather();
 });
 
 Pebble.addEventListener("showConfiguration", function () {
-  var selected = getSavedSecondZone();
-  var selectedWeather = getSavedWeatherLocation();
-  var optionsHtml = SECOND_ZONE_OPTIONS.map(function (zone) {
-    var isSelected = zone.label === selected.label ? " selected" : "";
-    return '<option value="' + zone.label + '|' + zone.offset + '"' + isSelected + '>' +
-      zone.label + " (" + formatOffset(zone.offset) + ")" +
-      "</option>";
-  }).join("");
-  var weatherOptionsJson = JSON.stringify(WEATHER_LOCATION_OPTIONS).replace(/</g, "\\u003c");
-  var selectedWeatherLabel = String(selectedWeather.label || "Phone GPS").replace(/"/g, "&quot;");
-
-  var html =
-    '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">' +
-    '<style>body{font-family:Arial,sans-serif;background:#0b1020;color:#fff;padding:20px}h1{font-size:22px;margin:0 0 8px}h2{font-size:18px;margin:24px 0 8px}label{display:block;margin:16px 0 8px}input,select,button{width:100%;padding:14px;border-radius:10px;border:none;font-size:16px;box-sizing:border-box}select,input{background:#fff;color:#111}button{margin-top:22px;background:#2f7cf6;color:#fff;font-weight:bold}p{color:#b6c2e1;line-height:1.5;margin:0 0 12px}.hint{font-size:13px;color:#8fa1cf;margin-top:8px}</style>' +
-    '</head><body><h1>Watchface Settings</h1><p>Choose the second time zone and a weather location. You can search countries and cities for weather.</p>' +
-    '<h2>Second Clock</h2><label for="zone">Time zone</label><select id="zone">' + optionsHtml + '</select>' +
-    '<h2>Weather</h2><label for="weather-search">Search country or city</label><input id="weather-search" type="text" placeholder="Search weather location" value="' + selectedWeatherLabel + '">' +
-    '<label for="weather-location">Weather location</label><select id="weather-location"></select><div class="hint">Tip: choose Phone GPS to always use your current location.</div>' +
-    '<button id="save">Save</button>' +
-    '<script>var WEATHER_OPTIONS=' + weatherOptionsJson + ';var selectedWeatherLabel=' + JSON.stringify(selectedWeather.label || "Phone GPS") + ';var searchInput=document.getElementById("weather-search");var weatherSelect=document.getElementById("weather-location");var debounceTimer=null;function optionValue(item){return item.mode==="fixed"?item.label+"|fixed|"+item.latitude+"|"+item.longitude:item.label+"|gps||";}function renderSelect(items){if(!items.length){items=[{label:"No results",mode:"none"}];}weatherSelect.innerHTML=items.map(function(item){var selected=item.label===selectedWeatherLabel?" selected":"";var disabled=item.mode==="none"?" disabled":"";var value=item.mode==="none"?"No results|none||":optionValue(item);return "<option value=\\""+value+"\\""+selected+disabled+">"+item.label+"</option>";}).join("");}function localSearch(q){return WEATHER_OPTIONS.filter(function(item){return item.label.toLowerCase().indexOf(q)!==-1;}).slice(0,60);}function mergeResults(localItems, remoteItems){var seen={};var merged=[];localItems.concat(remoteItems).forEach(function(item){var key=item.label+"|"+item.mode+"|"+(item.latitude||"")+"|"+(item.longitude||"");if(!seen[key]){seen[key]=true;merged.push(item);}});return merged.slice(0,80);}function fetchRemoteSearch(q){var url="https://geocoding-api.open-meteo.com/v1/search?name="+encodeURIComponent(q)+"&count=20&language=en&format=json";return fetch(url).then(function(r){return r.json();}).then(function(data){var results=(data&&data.results)||[];return results.map(function(item){var parts=[item.name];if(item.admin1&&item.admin1!==item.name)parts.push(item.admin1);if(item.country)parts.push(item.country);return {label:parts.join(", "),mode:"fixed",latitude:item.latitude,longitude:item.longitude};});}).catch(function(){return [];});}function runSearch(){var q=searchInput.value.trim().toLowerCase();if(!q){renderSelect(WEATHER_OPTIONS.slice(0,80));return;}var localItems=localSearch(q);renderSelect(localItems);if(q.length<3){return;}fetchRemoteSearch(q).then(function(remoteItems){renderSelect(mergeResults(localItems, remoteItems));});}searchInput.addEventListener("input",function(){clearTimeout(debounceTimer);debounceTimer=setTimeout(runSearch,250);});runSearch();document.getElementById("save").addEventListener("click",function(){var z=document.getElementById("zone").value.split("|");var w=weatherSelect.value.split("|");if(!w[1]||w[1]==="none"){return;}var data={SECOND_ZONE_LABEL:z[0],SECOND_ZONE_OFFSET:parseInt(z[1],10),WEATHER_LOCATION_LABEL:w[0],WEATHER_LOCATION_MODE:w[1],WEATHER_LOCATION_LAT:w[2]?parseFloat(w[2]):0,WEATHER_LOCATION_LON:w[3]?parseFloat(w[3]):0};document.location="pebblejs://close#" + encodeURIComponent(JSON.stringify(data));});</script>' +
-    '</body></html>';
-
-  Pebble.openURL("data:text/html," + encodeURIComponent(html));
+  Pebble.openURL("data:text/html," + encodeURIComponent(buildSettingsHtml()));
 });
 
 Pebble.addEventListener("webviewclosed", function (e) {
@@ -334,24 +384,26 @@ Pebble.addEventListener("webviewclosed", function (e) {
     return;
   }
 
-  localStorage.setItem("second_zone", JSON.stringify({
+  var secondZone = normalizeTimeZone({
     label: config.SECOND_ZONE_LABEL,
+    timezone: config.SECOND_ZONE_TIMEZONE || "UTC",
+    latitude: config.SECOND_ZONE_LAT,
+    longitude: config.SECOND_ZONE_LON,
     offset: config.SECOND_ZONE_OFFSET
-  }));
+  });
+
+  localStorage.setItem("second_zone", JSON.stringify(secondZone));
 
   if (config.WEATHER_LOCATION_LABEL && config.WEATHER_LOCATION_MODE) {
     localStorage.setItem("weather_location", JSON.stringify({
       label: config.WEATHER_LOCATION_LABEL,
       mode: config.WEATHER_LOCATION_MODE,
       latitude: config.WEATHER_LOCATION_LAT,
-      longitude: config.WEATHER_LOCATION_LON
+      longitude: config.WEATHER_LOCATION_LON,
+      timezone: config.WEATHER_LOCATION_TIMEZONE || "UTC"
     }));
   }
 
-  sendSecondZone({
-    label: config.SECOND_ZONE_LABEL,
-    offset: config.SECOND_ZONE_OFFSET
-  });
-
+  sendSecondZone(secondZone);
   fetchWeather();
 });
