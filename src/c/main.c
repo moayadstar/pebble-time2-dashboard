@@ -189,54 +189,66 @@ static void draw_panel(GContext *ctx, GRect rect, GColor background, GColor acce
   graphics_draw_round_rect(ctx, rect, 12);
 }
 
-static void draw_weather_icon(GContext *ctx, GPoint center, int code) {
+static void draw_weather_icon(GContext *ctx, GPoint center, int code, bool animate) {
+  const int pulse = animate ? 2 : 0;
+
   if (code < 0) {
     graphics_context_set_stroke_color(ctx, GColorYellow);
-    graphics_draw_line(ctx, GPoint(center.x - 5, center.y), GPoint(center.x + 5, center.y));
-    graphics_draw_line(ctx, GPoint(center.x, center.y - 5), GPoint(center.x, center.y + 5));
+    graphics_draw_line(ctx, GPoint(center.x - 8, center.y), GPoint(center.x + 8, center.y));
+    graphics_draw_line(ctx, GPoint(center.x, center.y - 8), GPoint(center.x, center.y + 8));
     return;
   }
 
   if (code == 0) {
     graphics_context_set_fill_color(ctx, GColorYellow);
-    graphics_fill_circle(ctx, center, 6);
+    graphics_fill_circle(ctx, center, 10 + pulse);
     graphics_context_set_stroke_color(ctx, GColorChromeYellow);
-    graphics_draw_circle(ctx, center, 8);
+    graphics_draw_circle(ctx, center, 13 + pulse);
+    graphics_draw_line(ctx, GPoint(center.x - 17, center.y), GPoint(center.x - 13, center.y));
+    graphics_draw_line(ctx, GPoint(center.x + 13, center.y), GPoint(center.x + 17, center.y));
+    graphics_draw_line(ctx, GPoint(center.x, center.y - 17), GPoint(center.x, center.y - 13));
+    graphics_draw_line(ctx, GPoint(center.x, center.y + 13), GPoint(center.x, center.y + 17));
     return;
   }
 
   if (code <= 3 || code <= 48) {
+    const int drift = animate ? 1 : -1;
     graphics_context_set_fill_color(ctx, GColorLightGray);
-    graphics_fill_circle(ctx, GPoint(center.x - 4, center.y + 2), 5);
-    graphics_fill_circle(ctx, GPoint(center.x + 2, center.y), 7);
-    graphics_fill_rect(ctx, GRect(center.x - 8, center.y + 2, 17, 6), 2, GCornersAll);
+    graphics_fill_circle(ctx, GPoint(center.x - 8 + drift, center.y + 3), 8);
+    graphics_fill_circle(ctx, GPoint(center.x + 2 + drift, center.y), 11);
+    graphics_fill_circle(ctx, GPoint(center.x + 12 + drift, center.y + 4), 7);
+    graphics_fill_rect(ctx, GRect(center.x - 16 + drift, center.y + 4, 33, 9), 3, GCornersAll);
     return;
   }
 
   if (code <= 67 || code <= 82) {
+    const int drop = animate ? 2 : 0;
     graphics_context_set_fill_color(ctx, GColorCyan);
-    graphics_fill_circle(ctx, GPoint(center.x - 4, center.y - 1), 5);
-    graphics_fill_circle(ctx, GPoint(center.x + 2, center.y - 3), 7);
-    graphics_fill_rect(ctx, GRect(center.x - 8, center.y, 17, 5), 2, GCornersAll);
+    graphics_fill_circle(ctx, GPoint(center.x - 8, center.y - 3), 8);
+    graphics_fill_circle(ctx, GPoint(center.x + 2, center.y - 6), 11);
+    graphics_fill_circle(ctx, GPoint(center.x + 12, center.y - 2), 7);
+    graphics_fill_rect(ctx, GRect(center.x - 16, center.y - 2, 33, 8), 3, GCornersAll);
     graphics_context_set_stroke_color(ctx, GColorCeleste);
-    graphics_draw_line(ctx, GPoint(center.x - 5, center.y + 8), GPoint(center.x - 7, center.y + 12));
-    graphics_draw_line(ctx, GPoint(center.x + 1, center.y + 8), GPoint(center.x - 1, center.y + 12));
-    graphics_draw_line(ctx, GPoint(center.x + 7, center.y + 8), GPoint(center.x + 5, center.y + 12));
+    graphics_draw_line(ctx, GPoint(center.x - 10, center.y + 9 + drop), GPoint(center.x - 13, center.y + 15 + drop));
+    graphics_draw_line(ctx, GPoint(center.x, center.y + 9), GPoint(center.x - 3, center.y + 15));
+    graphics_draw_line(ctx, GPoint(center.x + 10, center.y + 9 + drop), GPoint(center.x + 7, center.y + 15 + drop));
     return;
   }
 
   if (code <= 77) {
     graphics_context_set_stroke_color(ctx, GColorWhite);
-    graphics_draw_circle(ctx, center, 6);
-    graphics_draw_line(ctx, GPoint(center.x - 7, center.y), GPoint(center.x + 7, center.y));
-    graphics_draw_line(ctx, GPoint(center.x, center.y - 7), GPoint(center.x, center.y + 7));
+    graphics_draw_circle(ctx, center, 11);
+    graphics_draw_line(ctx, GPoint(center.x - 14, center.y), GPoint(center.x + 14, center.y));
+    graphics_draw_line(ctx, GPoint(center.x, center.y - 14), GPoint(center.x, center.y + 14));
+    graphics_draw_line(ctx, GPoint(center.x - 10, center.y - 10), GPoint(center.x + 10, center.y + 10));
+    graphics_draw_line(ctx, GPoint(center.x - 10, center.y + 10), GPoint(center.x + 10, center.y - 10));
     return;
   }
 
   graphics_context_set_stroke_color(ctx, GColorYellow);
-  graphics_draw_line(ctx, GPoint(center.x - 1, center.y - 7), GPoint(center.x - 5, center.y + 1));
-  graphics_draw_line(ctx, GPoint(center.x - 5, center.y + 1), GPoint(center.x + 1, center.y + 1));
-  graphics_draw_line(ctx, GPoint(center.x + 1, center.y + 1), GPoint(center.x - 2, center.y + 9));
+  graphics_draw_line(ctx, GPoint(center.x + 1, center.y - 14), GPoint(center.x - 7, center.y + 1));
+  graphics_draw_line(ctx, GPoint(center.x - 7, center.y + 1), GPoint(center.x + 3, center.y + 1));
+  graphics_draw_line(ctx, GPoint(center.x + 3, center.y + 1), GPoint(center.x - 3, center.y + 15));
 }
 
 static void draw_heart_icon(GContext *ctx, GPoint origin, GColor color) {
@@ -299,16 +311,15 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
                   GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 29, utc_rect.size.w - 16, 24),
                   GColorCeleste, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
 
-  draw_label(ctx, "WEATHER", GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 5, weather_rect.size.w - 16, 16), GColorWhite);
-  draw_weather_icon(ctx, GPoint(weather_rect.origin.x + weather_rect.size.w - 18, weather_rect.origin.y + 20), s_weather_code);
+  draw_weather_icon(ctx, GPoint(weather_rect.origin.x + 30, weather_rect.origin.y + 30), s_weather_code, s_heartbeat_flash);
   if (strcmp(s_weather_temp_buffer, "--") == 0) {
     draw_value(ctx, s_weather_cond_buffer,
-               GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 25, weather_rect.size.w - 16, 20),
+               GRect(weather_rect.origin.x + 48, weather_rect.origin.y + 16, weather_rect.size.w - 56, 22),
                GColorYellow, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
   } else {
     draw_value(ctx, s_weather_temp_buffer,
-               GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 21, weather_rect.size.w - 16, 28),
-               GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
+               GRect(weather_rect.origin.x + 48, weather_rect.origin.y + 14, weather_rect.size.w - 56, 28),
+               GColorWhite, FONT_KEY_GOTHIC_28_BOLD, GTextAlignmentLeft);
     draw_value(ctx, s_weather_cond_buffer,
                GRect(weather_rect.origin.x + 8, weather_rect.origin.y + weather_rect.size.h - 22, weather_rect.size.w - 16, 16),
                GColorYellow, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
