@@ -1,7 +1,7 @@
 {
   "name": "pebble-time2-dashboard",
   "author": "OpenAI Codex",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "keywords": [
     "pebble-watchface"
   ],
@@ -32,7 +32,9 @@
       "WEATHER_TEMP",
       "WEATHER_COND",
       "WEATHER_CITY",
-      "WEATHER_ERROR"
+      "WEATHER_ERROR",
+      "LOCAL_ZONE_OFFSET",
+      "LOCAL_ZONE_LABEL"
     ],
     "resources": {
       "media": []

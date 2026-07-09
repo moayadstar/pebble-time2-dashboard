@@ -13,12 +13,16 @@ enum {
   KEY_WEATHER_TEMP = 3,
   KEY_WEATHER_COND = 4,
   KEY_WEATHER_CITY = 5,
-  KEY_WEATHER_ERROR = 6
+  KEY_WEATHER_ERROR = 6,
+  KEY_LOCAL_ZONE_OFFSET = 7,
+  KEY_LOCAL_ZONE_LABEL = 8
 };
 
 enum {
   PERSIST_KEY_SECOND_ZONE_OFFSET = 100,
-  PERSIST_KEY_SECOND_ZONE_LABEL = 101
+  PERSIST_KEY_SECOND_ZONE_LABEL = 101,
+  PERSIST_KEY_LOCAL_ZONE_OFFSET = 102,
+  PERSIST_KEY_LOCAL_ZONE_LABEL = 103
 };
 
 static Window *s_main_window;
@@ -28,6 +32,7 @@ static char s_date_buffer[32];
 static char s_local_time_12h_buffer[16];
 static char s_local_time_24h_buffer[16];
 static char s_local_period_buffer[4];
+static char s_local_zone_label_buffer[24] = "LOCAL";
 static char s_second_time_12h_buffer[16];
 static char s_second_time_24h_buffer[16];
 static char s_second_period_buffer[4];
@@ -38,6 +43,7 @@ static char s_weather_cond_buffer[24] = "Loading";
 static char s_weather_city_buffer[24] = "Phone";
 static char s_steps_buffer[16] = "--";
 static char s_hr_buffer[16] = "--";
+static int s_local_zone_offset_minutes = 0;
 static int s_second_zone_offset_minutes = 0;
 
 static bool s_health_available;
@@ -60,6 +66,14 @@ static void update_second_zone_meta(void) {
 }
 
 static void load_settings(void) {
+  if (persist_exists(PERSIST_KEY_LOCAL_ZONE_OFFSET)) {
+    s_local_zone_offset_minutes = persist_read_int(PERSIST_KEY_LOCAL_ZONE_OFFSET);
+  }
+
+  if (persist_exists(PERSIST_KEY_LOCAL_ZONE_LABEL)) {
+    persist_read_string(PERSIST_KEY_LOCAL_ZONE_LABEL, s_local_zone_label_buffer, sizeof(s_local_zone_label_buffer));
+  }
+
   if (persist_exists(PERSIST_KEY_SECOND_ZONE_OFFSET)) {
     s_second_zone_offset_minutes = persist_read_int(PERSIST_KEY_SECOND_ZONE_OFFSET);
   }
@@ -72,6 +86,8 @@ static void load_settings(void) {
 }
 
 static void save_settings(void) {
+  persist_write_int(PERSIST_KEY_LOCAL_ZONE_OFFSET, s_local_zone_offset_minutes);
+  persist_write_string(PERSIST_KEY_LOCAL_ZONE_LABEL, s_local_zone_label_buffer);
   persist_write_int(PERSIST_KEY_SECOND_ZONE_OFFSET, s_second_zone_offset_minutes);
   persist_write_string(PERSIST_KEY_SECOND_ZONE_LABEL, s_second_zone_label_buffer);
 }
@@ -98,37 +114,33 @@ static void update_health(void) {
     snprintf(s_steps_buffer, sizeof(s_steps_buffer), "--");
   }
 
-  s_hr_available = health_service_metric_accessible(HealthMetricHeartRateBPM, time_start_of_today(), time(NULL)) &
+  s_hr_available = health_service_metric_accessible(HealthMetricHeartRateBPM, time(NULL), time(NULL)) &
                    HealthServiceAccessibilityMaskAvailable;
 
   if (s_hr_available) {
     HealthValue bpm = health_service_peek_current_value(HealthMetricHeartRateBPM);
+    if (bpm <= 0) {
+      bpm = health_service_peek_current_value(HealthMetricHeartRateRawBPM);
+    }
     if (bpm > 0) {
       snprintf(s_hr_buffer, sizeof(s_hr_buffer), "%ld", (long)bpm);
     } else {
       snprintf(s_hr_buffer, sizeof(s_hr_buffer), "wait");
     }
   } else {
-    snprintf(s_hr_buffer, sizeof(s_hr_buffer), "n/a");
+    snprintf(s_hr_buffer, sizeof(s_hr_buffer), "%s", s_hr_sample_requested ? "wait" : "n/a");
   }
 }
 
 static void configure_heart_rate_sensor(void) {
-  s_hr_available = health_service_metric_accessible(HealthMetricHeartRateBPM, time_start_of_today(), time(NULL)) &
-                   HealthServiceAccessibilityMaskAvailable;
-
-  if (!s_hr_available) {
-    s_hr_sample_requested = false;
-    return;
-  }
-
   s_hr_sample_requested = health_service_set_heart_rate_sample_period(60);
 }
 
 static void update_time(void) {
   time_t now = time(NULL);
-  struct tm *local_time = localtime(&now);
+  time_t local_zone_now = now + (s_local_zone_offset_minutes * 60);
   time_t second_zone_now = now + (s_second_zone_offset_minutes * 60);
+  struct tm *local_time = gmtime(&local_zone_now);
   struct tm *second_zone_time = gmtime(&second_zone_now);
 
   strftime(s_date_buffer, sizeof(s_date_buffer), "%a  %d %b", local_time);
@@ -201,27 +213,27 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
   draw_panel(ctx, weather_rect, GColorIslamicGreen, GColorYellow);
   draw_panel(ctx, health_rect, GColorPurple, GColorPastelYellow);
 
-  draw_label(ctx, "LOCAL", GRect(local_rect.origin.x + 8, local_rect.origin.y + 5, local_rect.size.w - 16, 16), GColorWhite);
+  draw_label(ctx, s_local_zone_label_buffer, GRect(local_rect.origin.x + 8, local_rect.origin.y + 5, local_rect.size.w - 16, 16), GColorWhite);
   draw_value(ctx, s_local_time_12h_buffer,
-             GRect(local_rect.origin.x + 8, local_rect.origin.y + 21, local_rect.size.w - 16, 24),
-             GColorWhite, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentLeft);
+             GRect(local_rect.origin.x + 8, local_rect.origin.y + 17, local_rect.size.w - 16, 30),
+             GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
   draw_value(ctx, s_local_period_buffer,
-             GRect(local_rect.origin.x + 9, local_rect.origin.y + local_rect.size.h - 40, 32, 16),
+             GRect(local_rect.origin.x + 9, local_rect.origin.y + local_rect.size.h - 38, 32, 16),
              GColorMelon, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_local_time_24h_buffer,
-             GRect(local_rect.origin.x + 8, local_rect.origin.y + local_rect.size.h - 29, local_rect.size.w - 16, 24),
-             GColorMelon, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
+             GRect(local_rect.origin.x + 8, local_rect.origin.y + local_rect.size.h - 31, local_rect.size.w - 16, 30),
+             GColorMelon, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentRight);
 
   draw_label(ctx, "TRAVEL", GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 5, utc_rect.size.w - 16, 16), GColorWhite);
   draw_value(ctx, s_second_time_12h_buffer,
-             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 21, utc_rect.size.w - 16, 24),
-             GColorWhite, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentLeft);
+             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + 17, utc_rect.size.w - 16, 30),
+             GColorWhite, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentLeft);
   draw_value(ctx, s_second_period_buffer,
-             GRect(utc_rect.origin.x + 9, utc_rect.origin.y + utc_rect.size.h - 40, 32, 16),
+             GRect(utc_rect.origin.x + 9, utc_rect.origin.y + utc_rect.size.h - 38, 32, 16),
              GColorCeleste, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_second_time_24h_buffer,
-             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 29, utc_rect.size.w - 16, 24),
-             GColorCeleste, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
+             GRect(utc_rect.origin.x + 8, utc_rect.origin.y + utc_rect.size.h - 31, utc_rect.size.w - 16, 30),
+             GColorCeleste, FONT_KEY_BITHAM_30_BLACK, GTextAlignmentRight);
 
   draw_label(ctx, "WEATHER", GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 5, weather_rect.size.w - 16, 16), GColorWhite);
   if (strcmp(s_weather_temp_buffer, "--") == 0) {
@@ -266,11 +278,20 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   Tuple *second_zone_offset_tuple = dict_find(iterator, KEY_SECOND_ZONE_OFFSET);
   Tuple *second_zone_label_tuple = dict_find(iterator, KEY_SECOND_ZONE_LABEL);
+  Tuple *local_zone_offset_tuple = dict_find(iterator, KEY_LOCAL_ZONE_OFFSET);
+  Tuple *local_zone_label_tuple = dict_find(iterator, KEY_LOCAL_ZONE_LABEL);
   Tuple *temp_tuple = dict_find(iterator, KEY_WEATHER_TEMP);
   Tuple *cond_tuple = dict_find(iterator, KEY_WEATHER_COND);
   Tuple *city_tuple = dict_find(iterator, KEY_WEATHER_CITY);
   Tuple *error_tuple = dict_find(iterator, KEY_WEATHER_ERROR);
 
+  if (local_zone_offset_tuple) {
+    s_local_zone_offset_minutes = local_zone_offset_tuple->value->int32;
+  }
+  if (local_zone_label_tuple) {
+    snprintf(s_local_zone_label_buffer, sizeof(s_local_zone_label_buffer), "%s",
+             local_zone_label_tuple->value->cstring);
+  }
   if (second_zone_offset_tuple) {
     s_second_zone_offset_minutes = second_zone_offset_tuple->value->int32;
     update_second_zone_meta();
@@ -279,7 +300,7 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
     snprintf(s_second_zone_label_buffer, sizeof(s_second_zone_label_buffer), "%s",
              second_zone_label_tuple->value->cstring);
   }
-  if (second_zone_offset_tuple || second_zone_label_tuple) {
+  if (local_zone_offset_tuple || local_zone_label_tuple || second_zone_offset_tuple || second_zone_label_tuple) {
     save_settings();
     update_time();
   }

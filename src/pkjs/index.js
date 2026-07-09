@@ -237,6 +237,25 @@ function getSavedSecondZone() {
   return normalizeTimeZone(CAPITAL_TIME_OPTIONS[0]);
 }
 
+function getSavedLocalZone() {
+  try {
+    var raw = localStorage.getItem("local_zone");
+    if (raw) {
+      return normalizeTimeZone(JSON.parse(raw));
+    }
+  } catch (e) {}
+
+  var localTimezone = "UTC";
+  try {
+    localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch (e) {}
+
+  return normalizeTimeZone({
+    label: localTimezone.split("/").pop().replace(/_/g, " "),
+    timezone: localTimezone
+  });
+}
+
 function getSavedWeatherLocation() {
   try {
     var raw = localStorage.getItem("weather_location");
@@ -245,11 +264,22 @@ function getSavedWeatherLocation() {
     }
   } catch (e) {}
 
-  return WEATHER_LOCATION_OPTIONS[0];
+  return WEATHER_LOCATION_OPTIONS[1] || WEATHER_LOCATION_OPTIONS[0];
 }
 
 function sendWeather(payload) {
   Pebble.sendAppMessage(payload, function () {}, function () {});
+}
+
+function compactLabel(label, fallback) {
+  var value = String(label || fallback || "Local");
+  var commaIndex = value.indexOf(",");
+
+  if (commaIndex > 0) {
+    value = value.substring(0, commaIndex);
+  }
+
+  return value.substring(0, 18);
 }
 
 function sendSecondZone(zone) {
@@ -258,6 +288,15 @@ function sendSecondZone(zone) {
   Pebble.sendAppMessage({
     SECOND_ZONE_OFFSET: normalized.offset,
     SECOND_ZONE_LABEL: normalized.label
+  }, function () {}, function () {});
+}
+
+function sendLocalZone(zone) {
+  var normalized = normalizeTimeZone(zone);
+
+  Pebble.sendAppMessage({
+    LOCAL_ZONE_OFFSET: normalized.offset,
+    LOCAL_ZONE_LABEL: normalized.label
   }, function () {}, function () {});
 }
 
@@ -287,7 +326,7 @@ function fetchWeatherForCoordinates(latitude, longitude, cityLabel) {
       sendWeather({
         WEATHER_TEMP: typeof temp === "number" ? Math.round(temp) + "C" : "--",
         WEATHER_COND: codeToLabel(weatherCode),
-        WEATHER_CITY: cityLabel || data.timezone_abbreviation || "Local",
+        WEATHER_CITY: compactLabel(cityLabel, data.timezone_abbreviation || "Local"),
         WEATHER_ERROR: ""
       });
     })
@@ -320,6 +359,7 @@ function fetchWeather() {
 }
 
 function buildSettingsHtml() {
+  var selectedLocalTime = getSavedLocalZone();
   var selectedTime = getSavedSecondZone();
   var selectedWeather = getSavedWeatherLocation();
   var timeOptionsJson = JSON.stringify(CAPITAL_TIME_OPTIONS).replace(/</g, "\\u003c");
@@ -327,13 +367,15 @@ function buildSettingsHtml() {
 
   return '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">' +
     '<style>body{font-family:Arial,sans-serif;background:#0b1020;color:#fff;padding:20px}h1{font-size:22px;margin:0 0 8px}h2{font-size:18px;margin:24px 0 8px}label{display:block;margin:16px 0 8px}input,select,button{width:100%;padding:14px;border-radius:10px;border:none;font-size:16px;box-sizing:border-box}select,input{background:#fff;color:#111}button{margin-top:22px;background:#2f7cf6;color:#fff;font-weight:bold}p{color:#b6c2e1;line-height:1.5;margin:0 0 12px}.hint{font-size:13px;color:#8fa1cf;margin-top:8px}.row{display:grid;grid-template-columns:1fr;gap:8px}</style>' +
-    '</head><body><h1>Watchface Settings</h1><p>Search manually by city name for both the second clock and weather. Built-in lists include world capitals.</p>' +
-    '<h2>Second Clock</h2><label for="time-search">Search city or capital</label><input id="time-search" type="text" placeholder="Search time city" value="' + escapeHtml(selectedTime.label) + '">' +
-    '<label for="time-location">Time city</label><select id="time-location"></select><div class="hint">The watch stores the selected city name and current UTC offset.</div>' +
+    '</head><body><h1>Watchface Settings</h1><p>Search manually by city name for local time, travel time, and weather.</p>' +
+    '<h2>Local Clock</h2><label for="local-search">Search local clock city</label><input id="local-search" type="text" placeholder="Search local time city" value="' + escapeHtml(selectedLocalTime.label) + '">' +
+    '<label for="local-location">Local time city</label><select id="local-location"></select><div class="hint">This controls the red LOCAL panel.</div>' +
+    '<h2>Travel Clock</h2><label for="time-search">Search travel city or capital</label><input id="time-search" type="text" placeholder="Search travel time city" value="' + escapeHtml(selectedTime.label) + '">' +
+    '<label for="time-location">Travel time city</label><select id="time-location"></select><div class="hint">This controls the blue TRAVEL panel.</div>' +
     '<h2>Weather</h2><label for="weather-search">Search country or city</label><input id="weather-search" type="text" placeholder="Search weather location" value="' + escapeHtml(selectedWeather.label || "Phone GPS") + '">' +
     '<label for="weather-location">Weather location</label><select id="weather-location"></select><div class="hint">Choose Phone GPS to always use your current location.</div>' +
     '<button id="save">Save</button>' +
-    '<script>var TIME_OPTIONS=' + timeOptionsJson + ';var WEATHER_OPTIONS=' + weatherOptionsJson + ';var selectedTimeLabel=' + JSON.stringify(selectedTime.label) + ';var selectedWeatherLabel=' + JSON.stringify(selectedWeather.label || "Phone GPS") + ';' +
+    '<script>var TIME_OPTIONS=' + timeOptionsJson + ';var WEATHER_OPTIONS=' + weatherOptionsJson + ';var selectedLocalTimeLabel=' + JSON.stringify(selectedLocalTime.label) + ';var selectedTimeLabel=' + JSON.stringify(selectedTime.label) + ';var selectedWeatherLabel=' + JSON.stringify(selectedWeather.label || "Phone GPS") + ';' +
     clientSettingsScript() +
     '</script></body></html>';
 }
@@ -350,16 +392,18 @@ function clientSettingsScript() {
     'function fetchRemoteSearch(q){var url="https://geocoding-api.open-meteo.com/v1/search?name="+encodeURIComponent(q)+"&count=25&language=en&format=json";return fetch(url).then(function(r){return r.json();}).then(function(data){return ((data&&data.results)||[]).map(function(item){var parts=[item.name];if(item.admin1&&item.admin1!==item.name)parts.push(item.admin1);if(item.country)parts.push(item.country);return {label:parts.join(", "),mode:"fixed",latitude:item.latitude,longitude:item.longitude,timezone:item.timezone||"UTC"};});}).catch(function(){return [];});}' +
     'function wireSearch(input,select,options,selectedLabel,kind){var timer=null;function run(){var q=input.value.trim().toLowerCase();if(!q){renderSelect(select,options.slice(0,80),selectedLabel,kind);return;}var local=localSearch(options,q);renderSelect(select,local,selectedLabel,kind);if(q.length<3)return;fetchRemoteSearch(q).then(function(remote){renderSelect(select,mergeResults(local,remote),selectedLabel,kind);});}input.addEventListener("input",function(){clearTimeout(timer);timer=setTimeout(run,250);});run();}' +
     'function tzOffset(tz){if(!tz||tz==="UTC")return 0;try{var now=new Date();var parts=new Intl.DateTimeFormat("en-US",{timeZone:tz,hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).formatToParts(now);var v={};parts.forEach(function(p){v[p.type]=p.value;});var h=parseInt(v.hour,10);if(h===24)h=0;var asUtc=Date.UTC(parseInt(v.year,10),parseInt(v.month,10)-1,parseInt(v.day,10),h,parseInt(v.minute,10));return Math.round((asUtc-now.getTime())/60000);}catch(e){return 0;}}' +
-    'var timeInput=document.getElementById("time-search");var timeSelect=document.getElementById("time-location");var weatherInput=document.getElementById("weather-search");var weatherSelect=document.getElementById("weather-location");wireSearch(timeInput,timeSelect,TIME_OPTIONS,selectedTimeLabel,"time");wireSearch(weatherInput,weatherSelect,WEATHER_OPTIONS,selectedWeatherLabel,"weather");' +
-    'document.getElementById("save").addEventListener("click",function(){var t=timeSelect.value.split("|");var w=weatherSelect.value.split("|");if(!t[1]||t[1]==="none"||!w[1]||w[1]==="none")return;var tz=t[4]||"UTC";var data={SECOND_ZONE_LABEL:t[0],SECOND_ZONE_OFFSET:tzOffset(tz),SECOND_ZONE_TIMEZONE:tz,SECOND_ZONE_LAT:t[2]?parseFloat(t[2]):0,SECOND_ZONE_LON:t[3]?parseFloat(t[3]):0,WEATHER_LOCATION_LABEL:w[0],WEATHER_LOCATION_MODE:w[1],WEATHER_LOCATION_LAT:w[2]?parseFloat(w[2]):0,WEATHER_LOCATION_LON:w[3]?parseFloat(w[3]):0,WEATHER_LOCATION_TIMEZONE:w[4]||"UTC"};document.location="pebblejs://close#"+encodeURIComponent(JSON.stringify(data));});';
+    'var localInput=document.getElementById("local-search");var localSelect=document.getElementById("local-location");var timeInput=document.getElementById("time-search");var timeSelect=document.getElementById("time-location");var weatherInput=document.getElementById("weather-search");var weatherSelect=document.getElementById("weather-location");wireSearch(localInput,localSelect,TIME_OPTIONS,selectedLocalTimeLabel,"time");wireSearch(timeInput,timeSelect,TIME_OPTIONS,selectedTimeLabel,"time");wireSearch(weatherInput,weatherSelect,WEATHER_OPTIONS,selectedWeatherLabel,"weather");' +
+    'document.getElementById("save").addEventListener("click",function(){var l=localSelect.value.split("|");var t=timeSelect.value.split("|");var w=weatherSelect.value.split("|");if(!l[1]||l[1]==="none"||!t[1]||t[1]==="none"||!w[1]||w[1]==="none")return;var ltz=l[4]||"UTC";var tz=t[4]||"UTC";var data={LOCAL_ZONE_LABEL:l[0],LOCAL_ZONE_OFFSET:tzOffset(ltz),LOCAL_ZONE_TIMEZONE:ltz,LOCAL_ZONE_LAT:l[2]?parseFloat(l[2]):0,LOCAL_ZONE_LON:l[3]?parseFloat(l[3]):0,SECOND_ZONE_LABEL:t[0],SECOND_ZONE_OFFSET:tzOffset(tz),SECOND_ZONE_TIMEZONE:tz,SECOND_ZONE_LAT:t[2]?parseFloat(t[2]):0,SECOND_ZONE_LON:t[3]?parseFloat(t[3]):0,WEATHER_LOCATION_LABEL:w[0],WEATHER_LOCATION_MODE:w[1],WEATHER_LOCATION_LAT:w[2]?parseFloat(w[2]):0,WEATHER_LOCATION_LON:w[3]?parseFloat(w[3]):0,WEATHER_LOCATION_TIMEZONE:w[4]||"UTC"};document.location="pebblejs://close#"+encodeURIComponent(JSON.stringify(data));});';
 }
 
 Pebble.addEventListener("ready", function () {
+  sendLocalZone(getSavedLocalZone());
   sendSecondZone(getSavedSecondZone());
   fetchWeather();
 });
 
 Pebble.addEventListener("appmessage", function () {
+  sendLocalZone(getSavedLocalZone());
   sendSecondZone(getSavedSecondZone());
   fetchWeather();
 });
@@ -380,9 +424,18 @@ Pebble.addEventListener("webviewclosed", function (e) {
     return;
   }
 
-  if (!config || typeof config.SECOND_ZONE_OFFSET !== "number" || !config.SECOND_ZONE_LABEL) {
+  if (!config || typeof config.SECOND_ZONE_OFFSET !== "number" || !config.SECOND_ZONE_LABEL ||
+      typeof config.LOCAL_ZONE_OFFSET !== "number" || !config.LOCAL_ZONE_LABEL) {
     return;
   }
+
+  var localZone = normalizeTimeZone({
+    label: config.LOCAL_ZONE_LABEL,
+    timezone: config.LOCAL_ZONE_TIMEZONE || "UTC",
+    latitude: config.LOCAL_ZONE_LAT,
+    longitude: config.LOCAL_ZONE_LON,
+    offset: config.LOCAL_ZONE_OFFSET
+  });
 
   var secondZone = normalizeTimeZone({
     label: config.SECOND_ZONE_LABEL,
@@ -392,6 +445,7 @@ Pebble.addEventListener("webviewclosed", function (e) {
     offset: config.SECOND_ZONE_OFFSET
   });
 
+  localStorage.setItem("local_zone", JSON.stringify(localZone));
   localStorage.setItem("second_zone", JSON.stringify(secondZone));
 
   if (config.WEATHER_LOCATION_LABEL && config.WEATHER_LOCATION_MODE) {
@@ -404,6 +458,7 @@ Pebble.addEventListener("webviewclosed", function (e) {
     }));
   }
 
+  sendLocalZone(localZone);
   sendSecondZone(secondZone);
   fetchWeather();
 });
