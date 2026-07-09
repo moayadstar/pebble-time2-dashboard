@@ -398,17 +398,17 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
   draw_heart_icon(ctx, GPoint(health_rect.origin.x + health_rect.size.w - 24, health_rect.origin.y + 10),
                   s_heartbeat_flash ? GColorRed : GColorPastelYellow);
   draw_value(ctx, s_hr_buffer,
-             GRect(health_rect.origin.x + 8, health_rect.origin.y + 23, health_rect.size.w - 16, 24),
+             GRect(health_rect.origin.x + 8, health_rect.origin.y + 23, 36, 24),
              GColorWhite, FONT_KEY_GOTHIC_24, GTextAlignmentLeft);
   draw_value(ctx, "bpm",
-             GRect(health_rect.origin.x + 8, health_rect.origin.y + health_rect.size.h - 34, 34, 16),
+             GRect(health_rect.origin.x + 45, health_rect.origin.y + 28, 34, 16),
+             GColorPastelYellow, FONT_KEY_GOTHIC_14, GTextAlignmentLeft);
+  draw_value(ctx, "steps",
+             GRect(health_rect.origin.x + 8, health_rect.origin.y + health_rect.size.h - 24, 40, 14),
              GColorPastelYellow, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
   draw_value(ctx, s_steps_buffer,
-             GRect(health_rect.origin.x + 46, health_rect.origin.y + health_rect.size.h - 20, health_rect.size.w - 54, 18),
-             GColorWhite, FONT_KEY_GOTHIC_18, GTextAlignmentRight);
-  draw_value(ctx, "steps",
-             GRect(health_rect.origin.x + 8, health_rect.origin.y + health_rect.size.h - 20, 42, 18),
-             GColorPastelYellow, FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentLeft);
+             GRect(health_rect.origin.x + 40, health_rect.origin.y + health_rect.size.h - 27, health_rect.size.w - 48, 24),
+             GColorWhite, FONT_KEY_GOTHIC_24, GTextAlignmentRight);
 }
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
