@@ -1,7 +1,7 @@
 {
   "name": "pebble-time2-dashboard",
   "author": "OpenAI Codex",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "keywords": [
     "pebble-watchface"
   ],
@@ -45,27 +45,27 @@
         {
           "type": "png",
           "name": "IMAGE_WEATHER_SUN",
-          "file": "resources/images/weather_sun.png"
+          "file": "images/weather_sun.png"
         },
         {
           "type": "png",
           "name": "IMAGE_WEATHER_CLOUD",
-          "file": "resources/images/weather_cloud.png"
+          "file": "images/weather_cloud.png"
         },
         {
           "type": "png",
           "name": "IMAGE_WEATHER_RAIN",
-          "file": "resources/images/weather_rain.png"
+          "file": "images/weather_rain.png"
         },
         {
           "type": "png",
           "name": "IMAGE_WEATHER_SNOW",
-          "file": "resources/images/weather_snow.png"
+          "file": "images/weather_snow.png"
         },
         {
           "type": "png",
           "name": "IMAGE_WEATHER_STORM",
-          "file": "resources/images/weather_storm.png"
+          "file": "images/weather_storm.png"
         }
       ]
     }
