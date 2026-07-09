@@ -1,0 +1,34 @@
+{
+  "name": "pebble-time2-dashboard",
+  "author": "OpenAI Codex",
+  "version": "1.0.0",
+  "keywords": ["pebble-watchface"],
+  "private": true,
+  "dependencies": {},
+  "pebble": {
+    "displayName": "Time2 Dashboard",
+    "uuid": "9c9dfb1c-3071-4736-9102-0162ececb070",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "configurable": true,
+    "targetPlatforms": [
+      "basalt",
+      "emery"
+    ],
+    "watchapp": {
+      "watchface": true
+    },
+    "messageKeys": [
+      "SECOND_ZONE_OFFSET",
+      "SECOND_ZONE_LABEL",
+      "WEATHER_REQUEST",
+      "WEATHER_TEMP",
+      "WEATHER_COND",
+      "WEATHER_CITY",
+      "WEATHER_ERROR"
+    ],
+    "resources": {
+      "media": []
+    }
+  }
+}
