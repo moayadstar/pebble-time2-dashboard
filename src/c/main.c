@@ -7,18 +7,6 @@
 #endif
 
 enum {
-  KEY_SECOND_ZONE_OFFSET = 0,
-  KEY_SECOND_ZONE_LABEL = 1,
-  KEY_WEATHER_REQUEST = 2,
-  KEY_WEATHER_TEMP = 3,
-  KEY_WEATHER_COND = 4,
-  KEY_WEATHER_CITY = 5,
-  KEY_WEATHER_ERROR = 6,
-  KEY_LOCAL_ZONE_OFFSET = 7,
-  KEY_LOCAL_ZONE_LABEL = 8
-};
-
-enum {
   PERSIST_KEY_SECOND_ZONE_OFFSET = 100,
   PERSIST_KEY_SECOND_ZONE_LABEL = 101,
   PERSIST_KEY_LOCAL_ZONE_OFFSET = 102,
@@ -98,7 +86,7 @@ static void request_phone_sync(void) {
     return;
   }
 
-  dict_write_uint8(out_iter, KEY_WEATHER_REQUEST, 1);
+  dict_write_uint8(out_iter, MESSAGE_KEY_WEATHER_REQUEST, 1);
   dict_write_end(out_iter);
   app_message_outbox_send();
 }
@@ -283,14 +271,14 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 }
 
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
-  Tuple *second_zone_offset_tuple = dict_find(iterator, KEY_SECOND_ZONE_OFFSET);
-  Tuple *second_zone_label_tuple = dict_find(iterator, KEY_SECOND_ZONE_LABEL);
-  Tuple *local_zone_offset_tuple = dict_find(iterator, KEY_LOCAL_ZONE_OFFSET);
-  Tuple *local_zone_label_tuple = dict_find(iterator, KEY_LOCAL_ZONE_LABEL);
-  Tuple *temp_tuple = dict_find(iterator, KEY_WEATHER_TEMP);
-  Tuple *cond_tuple = dict_find(iterator, KEY_WEATHER_COND);
-  Tuple *city_tuple = dict_find(iterator, KEY_WEATHER_CITY);
-  Tuple *error_tuple = dict_find(iterator, KEY_WEATHER_ERROR);
+  Tuple *second_zone_offset_tuple = dict_find(iterator, MESSAGE_KEY_SECOND_ZONE_OFFSET);
+  Tuple *second_zone_label_tuple = dict_find(iterator, MESSAGE_KEY_SECOND_ZONE_LABEL);
+  Tuple *local_zone_offset_tuple = dict_find(iterator, MESSAGE_KEY_LOCAL_ZONE_OFFSET);
+  Tuple *local_zone_label_tuple = dict_find(iterator, MESSAGE_KEY_LOCAL_ZONE_LABEL);
+  Tuple *temp_tuple = dict_find(iterator, MESSAGE_KEY_WEATHER_TEMP);
+  Tuple *cond_tuple = dict_find(iterator, MESSAGE_KEY_WEATHER_COND);
+  Tuple *city_tuple = dict_find(iterator, MESSAGE_KEY_WEATHER_CITY);
+  Tuple *error_tuple = dict_find(iterator, MESSAGE_KEY_WEATHER_ERROR);
 
   if (local_zone_offset_tuple) {
     s_local_zone_offset_minutes = local_zone_offset_tuple->value->int32;
