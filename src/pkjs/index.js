@@ -445,6 +445,7 @@ function fetchWeatherForCoordinates(latitude, longitude, cityLabel) {
         WEATHER_TEMP: typeof temp === "number" ? Math.round(temp) + "C" : "--",
         WEATHER_COND: codeToLabel(weatherCode),
         WEATHER_CITY: compactLabel(cityLabel, data.timezone_abbreviation || "Local"),
+        WEATHER_CODE: typeof weatherCode === "number" ? weatherCode : -1,
         WEATHER_ERROR: ""
       });
     },

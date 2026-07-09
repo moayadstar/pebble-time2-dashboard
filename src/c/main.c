@@ -29,15 +29,18 @@ static char s_second_zone_meta_buffer[16] = "UTC+00";
 static char s_weather_temp_buffer[16] = "--";
 static char s_weather_cond_buffer[24] = "Loading";
 static char s_weather_city_buffer[24] = "Phone";
+static char s_weather_sync_buffer[8] = "--:--";
 static char s_steps_buffer[16] = "--";
 static char s_hr_buffer[16] = "--";
 static int s_local_zone_offset_minutes = 0;
 static int s_second_zone_offset_minutes = 0;
+static int s_weather_code = -1;
 
 static bool s_health_available;
 static bool s_hr_available;
 static bool s_health_events_subscribed;
 static bool s_hr_sample_requested;
+static bool s_heartbeat_flash;
 
 static void update_second_zone_meta(void) {
   const int total_minutes = s_second_zone_offset_minutes;
@@ -150,6 +153,14 @@ static void update_time(void) {
   update_health();
 }
 
+static void update_weather_sync_time(void) {
+  time_t now = time(NULL);
+  time_t local_zone_now = now + (s_local_zone_offset_minutes * 60);
+  struct tm local_time = *gmtime(&local_zone_now);
+
+  strftime(s_weather_sync_buffer, sizeof(s_weather_sync_buffer), "%H:%M", &local_time);
+}
+
 static void draw_label(GContext *ctx, const char *text, GRect rect, GColor color) {
   graphics_context_set_text_color(ctx, color);
   graphics_draw_text(ctx, text, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD), rect,
@@ -176,6 +187,64 @@ static void draw_panel(GContext *ctx, GRect rect, GColor background, GColor acce
 
   graphics_context_set_stroke_color(ctx, accent);
   graphics_draw_round_rect(ctx, rect, 12);
+}
+
+static void draw_weather_icon(GContext *ctx, GPoint center, int code) {
+  if (code < 0) {
+    graphics_context_set_stroke_color(ctx, GColorYellow);
+    graphics_draw_line(ctx, GPoint(center.x - 5, center.y), GPoint(center.x + 5, center.y));
+    graphics_draw_line(ctx, GPoint(center.x, center.y - 5), GPoint(center.x, center.y + 5));
+    return;
+  }
+
+  if (code == 0) {
+    graphics_context_set_fill_color(ctx, GColorYellow);
+    graphics_fill_circle(ctx, center, 6);
+    graphics_context_set_stroke_color(ctx, GColorChromeYellow);
+    graphics_draw_circle(ctx, center, 8);
+    return;
+  }
+
+  if (code <= 3 || code <= 48) {
+    graphics_context_set_fill_color(ctx, GColorLightGray);
+    graphics_fill_circle(ctx, GPoint(center.x - 4, center.y + 2), 5);
+    graphics_fill_circle(ctx, GPoint(center.x + 2, center.y), 7);
+    graphics_fill_rect(ctx, GRect(center.x - 8, center.y + 2, 17, 6), 2, GCornersAll);
+    return;
+  }
+
+  if (code <= 67 || code <= 82) {
+    graphics_context_set_fill_color(ctx, GColorCyan);
+    graphics_fill_circle(ctx, GPoint(center.x - 4, center.y - 1), 5);
+    graphics_fill_circle(ctx, GPoint(center.x + 2, center.y - 3), 7);
+    graphics_fill_rect(ctx, GRect(center.x - 8, center.y, 17, 5), 2, GCornersAll);
+    graphics_context_set_stroke_color(ctx, GColorCeleste);
+    graphics_draw_line(ctx, GPoint(center.x - 5, center.y + 8), GPoint(center.x - 7, center.y + 12));
+    graphics_draw_line(ctx, GPoint(center.x + 1, center.y + 8), GPoint(center.x - 1, center.y + 12));
+    graphics_draw_line(ctx, GPoint(center.x + 7, center.y + 8), GPoint(center.x + 5, center.y + 12));
+    return;
+  }
+
+  if (code <= 77) {
+    graphics_context_set_stroke_color(ctx, GColorWhite);
+    graphics_draw_circle(ctx, center, 6);
+    graphics_draw_line(ctx, GPoint(center.x - 7, center.y), GPoint(center.x + 7, center.y));
+    graphics_draw_line(ctx, GPoint(center.x, center.y - 7), GPoint(center.x, center.y + 7));
+    return;
+  }
+
+  graphics_context_set_stroke_color(ctx, GColorYellow);
+  graphics_draw_line(ctx, GPoint(center.x - 1, center.y - 7), GPoint(center.x - 5, center.y + 1));
+  graphics_draw_line(ctx, GPoint(center.x - 5, center.y + 1), GPoint(center.x + 1, center.y + 1));
+  graphics_draw_line(ctx, GPoint(center.x + 1, center.y + 1), GPoint(center.x - 2, center.y + 9));
+}
+
+static void draw_heart_icon(GContext *ctx, GPoint origin, GColor color) {
+  graphics_context_set_fill_color(ctx, color);
+  graphics_fill_circle(ctx, GPoint(origin.x + 4, origin.y + 4), 4);
+  graphics_fill_circle(ctx, GPoint(origin.x + 10, origin.y + 4), 4);
+  graphics_fill_rect(ctx, GRect(origin.x + 2, origin.y + 5, 10, 5), 1, GCornersAll);
+  graphics_fill_rect(ctx, GRect(origin.x + 5, origin.y + 9, 5, 4), 1, GCornersAll);
 }
 
 static void canvas_update_proc(Layer *layer, GContext *ctx) {
@@ -231,6 +300,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
                   GColorCeleste, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentRight);
 
   draw_label(ctx, "WEATHER", GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 5, weather_rect.size.w - 16, 16), GColorWhite);
+  draw_weather_icon(ctx, GPoint(weather_rect.origin.x + weather_rect.size.w - 18, weather_rect.origin.y + 20), s_weather_code);
   if (strcmp(s_weather_temp_buffer, "--") == 0) {
     draw_value(ctx, s_weather_cond_buffer,
                GRect(weather_rect.origin.x + 8, weather_rect.origin.y + 25, weather_rect.size.w - 16, 20),
@@ -244,10 +314,15 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
                GColorYellow, FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentLeft);
   }
   draw_value(ctx, s_weather_city_buffer,
-             GRect(weather_rect.origin.x + 8, weather_rect.origin.y + weather_rect.size.h - 16, weather_rect.size.w - 16, 14),
+             GRect(weather_rect.origin.x + 8, weather_rect.origin.y + weather_rect.size.h - 16, weather_rect.size.w - 54, 14),
              GColorMintGreen, FONT_KEY_GOTHIC_14, GTextAlignmentLeft);
+  draw_value(ctx, s_weather_sync_buffer,
+             GRect(weather_rect.origin.x + weather_rect.size.w - 48, weather_rect.origin.y + weather_rect.size.h - 16, 40, 14),
+             GColorYellow, FONT_KEY_GOTHIC_14, GTextAlignmentRight);
 
   draw_label(ctx, "HEALTH", GRect(health_rect.origin.x + 8, health_rect.origin.y + 5, health_rect.size.w - 16, 16), GColorWhite);
+  draw_heart_icon(ctx, GPoint(health_rect.origin.x + health_rect.size.w - 24, health_rect.origin.y + 10),
+                  s_heartbeat_flash ? GColorRed : GColorPastelYellow);
   draw_value(ctx, s_hr_buffer,
              GRect(health_rect.origin.x + 8, health_rect.origin.y + 23, health_rect.size.w - 16, 24),
              GColorWhite, FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentLeft);
@@ -263,6 +338,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
 }
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
+  s_heartbeat_flash = !s_heartbeat_flash;
   update_time();
   if (tick_time->tm_min % 15 == 0) {
     request_phone_sync();
@@ -279,6 +355,7 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
   Tuple *cond_tuple = dict_find(iterator, MESSAGE_KEY_WEATHER_COND);
   Tuple *city_tuple = dict_find(iterator, MESSAGE_KEY_WEATHER_CITY);
   Tuple *error_tuple = dict_find(iterator, MESSAGE_KEY_WEATHER_ERROR);
+  Tuple *weather_code_tuple = dict_find(iterator, MESSAGE_KEY_WEATHER_CODE);
 
   if (local_zone_offset_tuple) {
     s_local_zone_offset_minutes = local_zone_offset_tuple->value->int32;
@@ -310,6 +387,12 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
   }
   if (error_tuple) {
     snprintf(s_weather_cond_buffer, sizeof(s_weather_cond_buffer), "%s", error_tuple->value->cstring);
+  }
+  if (weather_code_tuple) {
+    s_weather_code = weather_code_tuple->value->int32;
+  }
+  if (temp_tuple || cond_tuple || city_tuple || weather_code_tuple) {
+    update_weather_sync_time();
   }
 
   layer_mark_dirty(s_canvas_layer);
